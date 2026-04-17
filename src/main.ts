@@ -3,6 +3,7 @@ import { World } from "./core/world";
 import { CanvasRenderer } from "./render/canvasRenderer";
 import { renderInspector, renderStats } from "./ui/controls";
 import { initializeDraggablePanels } from "./ui/draggablePanels";
+import { initializeAdSenseBanner } from "./ui/ads";
 import { getSavedBlueprintSegments, initializeBiotBuilder, loadBiotIntoBuilder, saveFavoriteBlueprint } from "./ui/builder";
 import type { WorldConfig } from "./types/sim";
 
@@ -132,6 +133,7 @@ window.addEventListener("resize", resize);
 
 refreshHintText();
 rotateRibbonHint();
+initializeAdSenseBanner();
 world.spawnStarterFlower();
 world.spawnStarterFlower();
 world.spawnStarterFlower();
