@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biot.Game — Evolving browser biots</title>
+    <meta name="description" content="Grow, hunt, mutate, and rescue strange little lineages in a living browser ecosystem." />
+    <meta name="theme-color" content="#09101a" />
+    <meta property="og:title" content="Biot.Game" />
+    <meta property="og:description" content="A living browser petri dish full of evolving biots." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/biot-mark.svg" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="splash-overlay" hidden>
+      <div class="splash-backdrop"></div>
+      <section class="splash-card" aria-label="Welcome to Biot.Game">
+        <button id="splash-close" type="button" class="splash-close-btn" aria-label="Close welcome panel">×</button>
+        <img class="splash-studio-logo" src="/lkg-white.png" alt="Last Knight Games" />
+        <p class="splash-kicker">A Last Knight Games experiment</p>
+        <h1>Biot.Game</h1>
+        <p class="splash-subtitle">A living browser ecosystem full of weird little disasters.</p>
+        <ul class="splash-points">
+          <li>Biots evolve, hunt, and die on their own.</li>
+          <li>Use the builder to make species and throw them into the food web.</li>
+          <li>Thriving worlds usually start with lots of cheap plants and only a few predators.</li>
+        </ul>
+        <p id="splash-hint" class="splash-hint"></p>
+        <details class="splash-guide">
+          <summary>How to play + what you are seeing</summary>
+          <div class="splash-guide-body">
+            <p><strong>Good first move:</strong> spawn a few flower types, let the world stabilize, then add hunters.</p>
+            <p><strong>Builder:</strong> click segment chips or endpoints in the preview, change type, angle, and length, then spawn.</p>
+            <p><strong>Inspector:</strong> click any biot in the world to inspect it and save survivors back into the builder.</p>
+            <p><strong>Legend:</strong> green/photo feeds on light, red/predator bites, blue/propulsion moves, gold/reproduction lays eggs, gray/structure supports, silver/armor hardens.</p>
+          </div>
+        </details>
+        <div class="row splash-actions">
+          <button id="splash-start" type="button">Start simulation</button>
+          <button id="splash-builder" type="button" class="secondary-btn inline-btn">Open builder first</button>
+        </div>
+      </section>
+    </div>
+    <div id="app">
+      <main id="viewport">
+        <div id="brand-chip" aria-label="game branding">
+          <img src="/biot-mark.svg" alt="" />
+          <div>
+            <strong>Biot.Game</strong>
+            <span>by Last Knight Games</span>
+          </div>
+        </div>
+
+        <button id="helpBtn" type="button" aria-label="Open welcome help">?</button>
+
+        <div id="top-stats" class="top-stats-bar" aria-live="polite">
+          <div id="stats"></div>
+        </div>
+
+        <div id="hint-ribbon" aria-live="polite">
+          <span>Field note:</span>
+          <strong id="hint-ribbon-text"></strong>
+        </div>
+
+        <div id="ad-banner-shell" aria-label="Advertisement placeholder">
+          <span class="ad-label">Test Ad Placeholder</span>
+          <strong>728 × 90 style bottom banner</strong>
+          <span class="ad-copy">This will hold your AdSense banner once the site is approved.</span>
+        </div>
+
+        <canvas id="world"></canvas>
+
+        <details id="inspector-panel" class="hud-panel" open>
+          <summary>Inspector</summary>
+          <div class="hud-card inspector-card">
+            <div id="inspector"></div>
+            <div class="row inspector-actions">
+              <button id="saveSelectedBiotBtn" type="button" class="secondary-btn">Save selected biot to builder</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="builder-panel" class="hud-panel" open>
+          <summary>Biot Builder</summary>
+          <div class="hud-card builder-card">
+            <canvas id="builder-preview" width="320" height="320"></canvas>
+            <p id="builder-status" class="muted small-note"></p>
+            <div id="builder-segment-list" class="segment-list"></div>
+            <label>
+              Segment type
+              <select id="builder-segment-type"></select>
+            </label>
+            <label>
+              Angle
+              <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
+              <span id="builder-angle-value"></span>
+            </label>
+            <label>
+              Length
+              <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
+              <span id="builder-length-value"></span>
+            </label>
+            <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
+            <div class="row">
+              <button id="builder-add-child" type="button">Add child</button>
+              <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
+            </div>
+            <div class="row">
+              <button id="builder-spawn" type="button">Spawn biot</button>
+              <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
+            </div>
+            <label class="checkbox-row">
+              <input id="builder-spawn-mature" type="checkbox" checked />
+              <span>Spawn as mature adult</span>
+            </label>
+            <label>
+              Favorite name
+              <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
+            </label>
+            <div class="row">
+              <button id="builder-save-favorite" type="button">Save favorite</button>
+              <select id="builder-favorites"></select>
+            </div>
+            <div class="row">
+              <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
+              <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
+            </div>
+            <label>
+              Import / export blueprint JSON
+              <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
+            </label>
+            <div class="row">
+              <button id="builder-export" type="button">Copy/export</button>
+              <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
+            </div>
+          </div>
+        </details>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
