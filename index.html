@@ -3,25 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Biot.Game — Evolving browser biots</title>
+    <title>Biotarium — Evolving browser biots</title>
     <meta name="description" content="Grow, hunt, mutate, and rescue strange little lineages in a living browser ecosystem." />
     <meta name="theme-color" content="#09101a" />
-    <meta property="og:title" content="Biot.Game" />
+    <meta property="og:title" content="Biotarium" />
     <meta property="og:description" content="A living browser petri dish full of evolving biots." />
     <meta property="og:type" content="website" />
+    <meta name="description" content="Biotarium is a living browser ecosystem simulation. Build creatures and watch them evolve, survive, or collapse in real time.">
     <link rel="icon" type="image/svg+xml" href="/biot-mark.svg" />
     <link rel="stylesheet" href="/src/styles.css" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5782342090368502"
      crossorigin="anonymous"></script>
   </head>
   <body>
+    <noscript>
+  <div style="color:white; padding:20px;">
+    Biotarium is a browser-based ecosystem simulation. Please enable JavaScript to run the simulation.
+  </div>
+</noscript>
     <div id="splash-overlay" hidden>
       <div class="splash-backdrop"></div>
-      <section class="splash-card" aria-label="Welcome to Biot.Game">
+      <section class="splash-card" aria-label="Welcome to Biotarium">
         <button id="splash-close" type="button" class="splash-close-btn" aria-label="Close welcome panel">×</button>
         <img class="splash-studio-logo" src="/lkg-white.png" alt="Last Knight Games" />
         <p class="splash-kicker">A Last Knight Games experiment</p>
-        <h1>Biot.Game</h1>
+        <h1>Biotarium.com 
+        </h1> <p>©2026 Last Knight Games</p>
         <p class="splash-subtitle">Build creatures. Watch them survive (or die). Start simple. Add predators later.</p>
         <ul class="splash-points">
           <li>Biots evolve, hunt, and die on their own.</li>
@@ -49,7 +56,7 @@
         <div id="brand-chip" aria-label="game branding">
           <img src="/biot-mark.svg" alt="" />
           <div>
-            <strong>Biot.Game</strong>
+            <strong>Biotarium</strong>
             <span>by Last Knight Games</span>
           </div>
         </div>
@@ -148,6 +155,11 @@
     </div>
 
     <script type="module" src="/src/main.ts"></script>
-    <a href="/privacy">Privacy</a> • <a href="/about">About</a> • <a href="/contact">Contact</a>
+<div id="footer-links">
+  © Last Knight Games • 
+  <a href="/about">About</a> • 
+  <a href="/privacy">Privacy</a> • 
+  <a href="/contact">Contact</a>
+</div>
   </body>
 </html>

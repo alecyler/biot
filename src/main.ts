@@ -76,11 +76,17 @@ function renderSimplePage(title: string, body: string) {
 // Routes
 if (path === "/privacy") {
   renderSimplePage("Privacy Policy", `
-    Biotarium uses cookies and similar technologies to improve user experience.
-    We may display advertisements through Google AdSense.
-    These ads may use cookies to serve relevant content.
-    We do not collect personal identifying information directly.
-    By using this site, you consent to the use of cookies.
+Privacy Policy
+
+Biotarium uses cookies and similar technologies to improve user experience.
+
+We may display advertisements through Google AdSense, which may use cookies to serve relevant ads.
+
+We do not collect personal identifying information directly.
+
+Third-party vendors, including Google, may use cookies to serve ads based on prior visits.
+
+By using this site, you consent to the use of cookies and third-party services.
   `);
   throw new Error("route rendered");
 }
