@@ -1,8 +1,8 @@
 import { getLifeStageLabel } from "./core/geometry";
 import { World } from "./core/world";
 import { CanvasRenderer } from "./render/canvasRenderer";
-import { bindControls, renderInspector, renderStats, type CanvasTool } from "./ui/controls";
-import { initializeDraggablePanels, resetDraggablePanels } from "./ui/draggablePanels";
+import { renderInspector, renderStats } from "./ui/controls";
+import { initializeDraggablePanels } from "./ui/draggablePanels";
 import { getSavedBlueprintSegments, initializeBiotBuilder, saveFavoriteBlueprint } from "./ui/builder";
 import type { WorldConfig } from "./types/sim";
 
@@ -10,29 +10,44 @@ const canvasNode = document.getElementById("world");
 const statsNode = document.getElementById("stats");
 const inspectorNode = document.getElementById("inspector");
 const viewportNode = document.getElementById("viewport");
-const controlDrawerNode = document.getElementById("control-drawer");
-const toggleControlsBtnNode = document.getElementById("toggleControlsBtn");
 const saveSelectedBiotBtnNode = document.getElementById("saveSelectedBiotBtn");
+const splashOverlayNode = document.getElementById("splash-overlay");
+const splashStartNode = document.getElementById("splash-start");
+const splashBuilderNode = document.getElementById("splash-builder");
+const splashCloseNode = document.getElementById("splash-close");
+const splashHintNode = document.getElementById("splash-hint");
+const helpBtnNode = document.getElementById("helpBtn");
+const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
   !(statsNode instanceof HTMLElement) ||
   !(inspectorNode instanceof HTMLElement) ||
   !(viewportNode instanceof HTMLElement) ||
-  !(controlDrawerNode instanceof HTMLDetailsElement) ||
-  !(toggleControlsBtnNode instanceof HTMLButtonElement) ||
-  !(saveSelectedBiotBtnNode instanceof HTMLButtonElement)
+  !(saveSelectedBiotBtnNode instanceof HTMLButtonElement) ||
+  !(splashOverlayNode instanceof HTMLElement) ||
+  !(splashStartNode instanceof HTMLButtonElement) ||
+  !(splashBuilderNode instanceof HTMLButtonElement) ||
+  !(splashCloseNode instanceof HTMLButtonElement) ||
+  !(splashHintNode instanceof HTMLElement) ||
+  !(helpBtnNode instanceof HTMLButtonElement) ||
+  !(hintRibbonTextNode instanceof HTMLElement)
 ) {
-  throw new Error("Missing required DOM nodes.");
+  throw new Error("Missing required DOM nodes for current UI.");
 }
 
-const canvas: HTMLCanvasElement = canvasNode;
-const statsElement: HTMLElement = statsNode;
-const inspectorElement: HTMLElement = inspectorNode;
-const viewport: HTMLElement = viewportNode;
-const controlDrawer: HTMLDetailsElement = controlDrawerNode;
-const toggleControlsBtn: HTMLButtonElement = toggleControlsBtnNode;
-const saveSelectedBiotBtn: HTMLButtonElement = saveSelectedBiotBtnNode;
+const canvas = canvasNode;
+const statsElement = statsNode;
+const inspectorElement = inspectorNode;
+const viewport = viewportNode;
+const saveSelectedBiotBtn = saveSelectedBiotBtnNode;
+const splashOverlay = splashOverlayNode;
+const splashStartBtn = splashStartNode;
+const splashBuilderBtn = splashBuilderNode;
+const splashCloseBtn = splashCloseNode;
+const splashHint = splashHintNode;
+const helpBtn = helpBtnNode;
+const hintRibbonText = hintRibbonTextNode;
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -52,13 +67,34 @@ world.setCuckooBlueprints(getSavedBlueprintSegments());
 world.seed(72);
 
 const renderer = new CanvasRenderer(canvas);
-let paused = false;
+
+let paused = true;
 let selectedBiotId: string | null = null;
-let controlDrawerTimer: number | null = null;
-let activeTool: CanvasTool = "inspect";
 let lastRenderedVersion = -1;
 let lastUiRefresh = 0;
 let lastSelectedBiotIdForUi: string | null = null;
+
+const splashHints = [
+  "Good first move: let a few flower types establish before adding hunters.",
+  "Cheap plants keep the food web alive. Too many predators will collapse it.",
+  "Click a biot to inspect it, then save survivors back into the builder.",
+  "Builder favorites are a great way to seed stable lineages quickly.",
+];
+
+const ribbonHints = [
+  "Try spawning a flower first, then a hunter.",
+  "If the world crashes, add more cheap producers.",
+  "Saved favorites can become future cuckoo eggs.",
+  "Inspect survivors and capture them back into the builder.",
+];
+
+function showSplash(): void {
+  splashOverlay.hidden = false;
+}
+
+function hideSplash(): void {
+  splashOverlay.hidden = true;
+}
 
 function resize(): void {
   config.width = Math.max(400, viewport.clientWidth);
@@ -66,47 +102,50 @@ function resize(): void {
   renderer.resize(config.width, config.height);
 }
 
-function clearControlDrawerTimer(): void {
-  if (controlDrawerTimer !== null) {
-    window.clearTimeout(controlDrawerTimer);
-    controlDrawerTimer = null;
-  }
+function refreshHintText(): void {
+  const splashIndex = Math.floor(Math.random() * splashHints.length);
+  splashHint.textContent = splashHints[splashIndex];
 }
 
-function scheduleControlDrawerClose(delayMs = 4500): void {
-  clearControlDrawerTimer();
-  controlDrawerTimer = window.setTimeout(() => {
-    controlDrawer.open = false;
-    controlDrawerTimer = null;
-  }, delayMs);
-}
-
-function showControlDrawer(): void {
-  controlDrawer.open = true;
-  scheduleControlDrawerClose();
+function rotateRibbonHint(): void {
+  let index = 0;
+  hintRibbonText.textContent = ribbonHints[index];
+  window.setInterval(() => {
+    index = (index + 1) % ribbonHints.length;
+    hintRibbonText.textContent = ribbonHints[index];
+  }, 4000);
 }
 
 resize();
 initializeDraggablePanels();
 window.addEventListener("resize", resize);
 
-toggleControlsBtn.addEventListener("click", () => {
-  if (controlDrawer.open) {
-    controlDrawer.open = false;
-    clearControlDrawerTimer();
-  } else {
-    showControlDrawer();
+refreshHintText();
+rotateRibbonHint();
+showSplash();
+
+helpBtn.addEventListener("click", () => {
+  refreshHintText();
+  showSplash();
+});
+
+splashStartBtn.addEventListener("click", () => {
+  paused = false;
+  hideSplash();
+});
+
+splashBuilderBtn.addEventListener("click", () => {
+  paused = false;
+  hideSplash();
+  const builderPanel = document.getElementById("builder-panel");
+  if (builderPanel instanceof HTMLDetailsElement) {
+    builderPanel.open = true;
   }
 });
 
-controlDrawer.addEventListener("mouseenter", () => {
-  clearControlDrawerTimer();
-});
-
-controlDrawer.addEventListener("mouseleave", () => {
-  if (controlDrawer.open) {
-    scheduleControlDrawerClose(2500);
-  }
+splashCloseBtn.addEventListener("click", () => {
+  paused = false;
+  hideSplash();
 });
 
 saveSelectedBiotBtn.addEventListener("click", () => {
@@ -127,52 +166,16 @@ initializeBiotBuilder((segments, mature) => {
   selectedBiotId = spawned.id;
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   lastRenderedVersion = -1;
+  paused = false;
 });
-
-bindControls(
-  config,
-  () => {
-    world.setCuckooBlueprints(getSavedBlueprintSegments());
-    world.seed(72);
-    selectedBiotId = null;
-    lastRenderedVersion = -1;
-  },
-  () => {
-    paused = !paused;
-    return paused;
-  },
-  () => {
-    resetDraggablePanels();
-  },
-  (tool) => {
-    activeTool = tool;
-    canvas.style.cursor = tool === "inspect" ? "crosshair" : "copy";
-  },
-);
 
 canvas.addEventListener("click", (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  if (activeTool === "inspect") {
-    const biot = world.findBiotAt(x, y);
-    selectedBiotId = biot?.id ?? null;
-    return;
-  }
-
-  if (activeTool === "light") {
-    world.addLightZoneAt(x, y);
-  } else if (activeTool === "gravity") {
-    world.addGravityZoneAt(x, y);
-  } else if (activeTool === "fire") {
-    world.addFireZoneAt(x, y);
-  } else if (activeTool === "storm") {
-    world.addDisasterAt(x, y);
-  } else if (activeTool === "mutate") {
-    const mutated = world.forceMutateBiotAt(x, y);
-    selectedBiotId = mutated?.id ?? selectedBiotId;
-  }
+  const biot = world.findBiotAt(x, y);
+  selectedBiotId = biot?.id ?? null;
 });
 
 let lastStep = performance.now();
