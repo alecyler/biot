@@ -4,7 +4,7 @@ import { CanvasRenderer } from "./render/canvasRenderer";
 import { renderInspector, renderStats } from "./ui/controls";
 import { initializeDraggablePanels } from "./ui/draggablePanels";
 import { initializeAdSenseBanner } from "./ui/ads";
-import { getSavedBlueprintSegments, initializeBiotBuilder, loadBiotIntoBuilder, saveFavoriteBlueprint } from "./ui/builder";
+import { getSavedBlueprintSegments, getSavedBlueprintsByCategory, initializeBiotBuilder, loadBiotIntoBuilder, saveFavoriteBlueprint } from "./ui/builder";
 import type { WorldConfig } from "./types/sim";
 
 const canvasNode = document.getElementById("world");
@@ -128,6 +128,20 @@ function rotateRibbonHint(): void {
   }, 4000);
 }
 
+function spawnFromSavedPool(category: "flower" | "hunter"): void {
+  const pool = getSavedBlueprintsByCategory(category);
+  if (pool.length > 0) {
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    world.spawnDesignedBiot(pick.segments, true);
+  } else if (category === "flower") {
+    world.spawnStarterFlower();
+  } else {
+    world.spawnStarterHunter();
+  }
+  paused = false;
+  lastRenderedVersion = -1;
+}
+
 resize();
 initializeDraggablePanels();
 window.addEventListener("resize", resize);
@@ -135,10 +149,10 @@ window.addEventListener("resize", resize);
 refreshHintText();
 rotateRibbonHint();
 initializeAdSenseBanner();
-world.spawnStarterFlower();
-world.spawnStarterFlower();
-world.spawnStarterFlower();
-world.spawnStarterHunter();
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("hunter");
 showSplash();
 
 helpBtn.addEventListener("click", () => {
@@ -147,15 +161,11 @@ helpBtn.addEventListener("click", () => {
 });
 
 quickSpawnFlowerBtn.addEventListener("click", () => {
-  world.spawnStarterFlower();
-  paused = false;
-  lastRenderedVersion = -1;
+  spawnFromSavedPool("flower");
 });
 
 quickSpawnHunterBtn.addEventListener("click", () => {
-  world.spawnStarterHunter();
-  paused = false;
-  lastRenderedVersion = -1;
+  spawnFromSavedPool("hunter");
 });
 
 chaosEventBtn.addEventListener("click", () => {

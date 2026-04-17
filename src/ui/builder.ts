@@ -95,7 +95,7 @@ function makeDefaultSegments(): Segment[] {
 function starterBlueprints(): FavoriteBlueprint[] {
   const bp = (name: string, segments: Segment[]): FavoriteBlueprint => ({ name, segments });
   return [
-    bp("Biot-7 Classic Flower", [
+    bp("Flower 7 · Classic Flower", [
       makeRootSegment(),
       { id: "seg-1", parentId: "root", type: "photo", angle: -1.8, jointOffset: 0, length: 18, phase: 0 },
       { id: "seg-2", parentId: "root", type: "photo", angle: -0.8, jointOffset: 0, length: 20, phase: 0.8 },
@@ -158,6 +158,15 @@ function starterBlueprints(): FavoriteBlueprint[] {
       { id: "seg-4", parentId: "root", type: "photo", angle: 1.75, jointOffset: 0, length: 17, phase: 1.8 },
       { id: "seg-5", parentId: "root", type: "fireproof", angle: 0, jointOffset: 0, length: 12, phase: 0 },
       { id: "seg-6", parentId: "root", type: "reproduction", angle: Math.PI, jointOffset: 0, length: 14, phase: 0 },
+    ]),
+    bp("Flower 8 · Sun Skater", [
+      makeRootSegment(),
+      { id: "seg-1", parentId: "root", type: "photo", angle: -1.15, jointOffset: 0, length: 18, phase: 0 },
+      { id: "seg-2", parentId: "root", type: "photo", angle: 1.15, jointOffset: 0, length: 18, phase: 0.8 },
+      { id: "seg-3", parentId: "root", type: "glide", angle: -2.2, jointOffset: 0, length: 16, phase: 0 },
+      { id: "seg-4", parentId: "root", type: "glide", angle: 2.2, jointOffset: 0, length: 16, phase: Math.PI },
+      { id: "seg-5", parentId: "root", type: "brain", angle: 0, jointOffset: 0, length: 11, phase: 0 },
+      { id: "seg-6", parentId: "root", type: "reproduction", angle: Math.PI, jointOffset: 0, length: 13, phase: 0 },
     ]),
     bp("Wedge Hunter", [
       makeRootSegment(),
@@ -257,6 +266,47 @@ function starterBlueprints(): FavoriteBlueprint[] {
   ];
 }
 
+type BlueprintCategory = "flower" | "hunter";
+
+function inferBlueprintCategory(entry: FavoriteBlueprint): BlueprintCategory | null {
+  const lowerName = entry.name.toLowerCase();
+  if (lowerName.includes("flower") || lowerName.includes("grazer") || lowerName.includes("moss") || lowerName.includes("fern") || lowerName.includes("bloom")) {
+    return "flower";
+  }
+  if (lowerName.includes("hunter") || lowerName.includes("skirmisher") || lowerName.includes("spinner") || lowerName.includes("pouncer") || lowerName.includes("ripper")) {
+    return "hunter";
+  }
+
+  const photo = entry.segments.filter((segment) => segment.type === "photo").length;
+  const predator = entry.segments.filter((segment) => segment.type === "predator").length;
+  if (photo > predator) return "flower";
+  if (predator > 0) return "hunter";
+  return null;
+}
+
+function migrateFavorites(favorites: FavoriteBlueprint[]): FavoriteBlueprint[] {
+  const seen = new Set<string>();
+  const migrated: FavoriteBlueprint[] = [];
+
+  for (const favorite of favorites) {
+    const normalizedName = favorite.name === "Biot-7 Classic Flower"
+      ? "Flower 7 · Classic Flower"
+      : favorite.name;
+    if (seen.has(normalizedName)) continue;
+    seen.add(normalizedName);
+    migrated.push({
+      name: normalizedName,
+      segments: sanitizeImportedSegments(cloneSegments(favorite.segments)),
+    });
+  }
+
+  return migrated;
+}
+
+export function getSavedBlueprintsByCategory(category: BlueprintCategory): FavoriteBlueprint[] {
+  return getSavedBlueprints().filter((entry) => inferBlueprintCategory(entry) === category);
+}
+
 function mergeStarterBlueprints(favorites: FavoriteBlueprint[]): FavoriteBlueprint[] {
   const merged = [...favorites];
   const existing = new Set(merged.map((favorite) => favorite.name));
@@ -293,7 +343,7 @@ function broadcastFavoritesUpdated(): void {
 }
 
 export function getSavedBlueprints(): FavoriteBlueprint[] {
-  let favorites = readFavorites();
+  let favorites = migrateFavorites(readFavorites());
   if (favorites.length === 0) {
     favorites = starterBlueprints();
     writeFavorites(favorites);
@@ -301,7 +351,8 @@ export function getSavedBlueprints(): FavoriteBlueprint[] {
   }
 
   const merged = mergeStarterBlueprints(favorites);
-  if (merged.length !== favorites.length) {
+  const changed = JSON.stringify(merged) !== JSON.stringify(favorites);
+  if (changed) {
     favorites = merged;
     writeFavorites(favorites);
   }
@@ -434,7 +485,14 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
   };
 
   const getSegment = (id: string | null): Segment | undefined => segments.find((segment) => segment.id === id);
-  const getPreviewBiot = (): Biot => createDesignedBiot("preview", 160, 160, 120, cloneSegments(segments), true);
+  const getPreviewBiot = (): Biot => {
+    const preview = createDesignedBiot("preview", 160, 160, 120, cloneSegments(segments), true);
+    preview.rotation = 0;
+    preview.vx = 0;
+    preview.vy = 0;
+    preview.angularVelocity = 0;
+    return preview;
+  };
 
   const renderPreview = (): void => {
     const ctx = refs.canvas.getContext("2d");

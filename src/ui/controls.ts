@@ -123,21 +123,26 @@ export function bindControls(
 }
 
 export function renderStats(target: HTMLElement, stats: StatsDisplay): void {
-  target.innerHTML = [
-    `Tick: <strong>${stats.tick}</strong>`,
-    `Population: <strong>${stats.population}</strong>`,
-    `Births: <strong>${stats.births}</strong>`,
-    `Deaths: <strong>${stats.deaths}</strong>`,
-    `Average energy: <strong>${stats.avgEnergy.toFixed(1)}</strong>`,
-    `Richest biot: <strong>${stats.richestEnergy.toFixed(1)}</strong>`,
-    `Oldest biot age: <strong>${stats.oldestAge}</strong>`,
+  const pills = [
+    ["Tick", String(stats.tick)],
+    ["Population", String(stats.population)],
+    ["Births", String(stats.births)],
+    ["Deaths", String(stats.deaths)],
+    ["Avg energy", stats.avgEnergy.toFixed(1)],
+    ["Richest", stats.richestEnergy.toFixed(1)],
+    ["Oldest age", String(stats.oldestAge)],
     stats.hatchlings !== undefined
-      ? `Life stages — hatchlings: <strong>${stats.hatchlings}</strong>, juveniles: <strong>${stats.juveniles ?? 0}</strong>, adults: <strong>${stats.adults ?? 0}</strong>`
-      : "",
-    stats.afflicted !== undefined ? `Afflicted: <strong>${stats.afflicted}</strong>` : "",
-  ]
-    .filter(Boolean)
-    .join("<br />");
+      ? ["Life stages", `H ${stats.hatchlings} · J ${stats.juveniles ?? 0} · A ${stats.adults ?? 0}`]
+      : null,
+    stats.afflicted !== undefined ? ["Afflicted", String(stats.afflicted)] : null,
+  ].filter(Boolean) as Array<[string, string]>;
+
+  target.innerHTML = pills
+    .map(
+      ([label, value]) =>
+        `<span class="stat-pill"><span class="stat-label">${label}</span><strong>${value}</strong></span>`,
+    )
+    .join("");
 }
 
 
