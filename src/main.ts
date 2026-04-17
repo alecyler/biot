@@ -59,6 +59,47 @@ const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 
+
+const path = window.location.pathname;
+
+function renderSimplePage(title: string, body: string) {
+  document.body.innerHTML = `
+    <div style="max-width:800px;margin:80px auto;color:#ddd;font-family:sans-serif;">
+      <h1>${title}</h1>
+      <p>${body}</p>
+      <br/>
+      <a href="/">← Back to Biotarium</a>
+    </div>
+  `;
+}
+
+// Routes
+if (path === "/privacy") {
+  renderSimplePage("Privacy Policy", `
+    Biotarium uses cookies and similar technologies to improve user experience.
+    We may display advertisements through Google AdSense.
+    These ads may use cookies to serve relevant content.
+    We do not collect personal identifying information directly.
+    By using this site, you consent to the use of cookies.
+  `);
+  throw new Error("route rendered");
+}
+
+if (path === "/about") {
+  renderSimplePage("About Biotarium", `
+    Biotarium is a living browser ecosystem experiment by Last Knight Games.
+    Build creatures, release them, and watch them evolve, survive, or collapse.
+  `);
+  throw new Error("route rendered");
+}
+
+if (path === "/contact") {
+  renderSimplePage("Contact", `
+    For questions or feedback, contact: alecyler@gmail.com
+  `);
+  throw new Error("route rendered");
+}
+
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
   height: Math.max(400, window.innerHeight),
