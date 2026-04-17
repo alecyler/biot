@@ -3291,7 +3291,7 @@ export class World {
     const maturityRange = options?.maturityAge ?? [120, 260];
     const maturityAge = randomInt(maturityRange[0], maturityRange[1]);
     const lifespanFactor = options?.lifespanFactor ?? [2.6, 4.0];
-    const lifespan = Math.round(clamp(maturityAge * randomRange(lifespanFactor[0], lifespanFactor[1]), 420, 2000));
+    const lifespan = Math.round(clamp(maturityAge * randomRange(lifespanFactor[0], lifespanFactor[1]) * 10, 4200, 20000));
     const velocity = options?.velocity ?? 0.16;
     const angularRange = options?.angularVelocity ?? [-0.006, 0.006];
     const hueRange = options?.hueJitter ?? [-6, 6];
@@ -3576,7 +3576,7 @@ export class World {
     ];
 
     const maturityAge = randomInt(140, 320);
-    const lifespan = Math.round(clamp(maturityAge * randomRange(2.8, 4.1), 420, 1800));
+    const lifespan = Math.round(clamp(maturityAge * randomRange(2.8, 4.1) * 10, 4200, 18000));
 
     return {
       id,
@@ -3673,7 +3673,7 @@ export class World {
     ];
 
     const maturityAge = randomInt(120, 240);
-    const lifespan = Math.round(clamp(maturityAge * randomRange(2.4, 3.6), 420, 1700));
+    const lifespan = Math.round(clamp(maturityAge * randomRange(2.4, 3.6) * 10, 4200, 17000));
 
     return {
       id,

@@ -109,8 +109,10 @@ function rollMaturityAge(): number {
   return randomInt(120, 420);
 }
 
+const LIFESPAN_MULTIPLIER = 10;
+
 function deriveLifespanFromMaturity(maturityAge: number): number {
-  return Math.round(clamp(maturityAge * randomRange(2.2, 3.4), 320, 1600));
+  return Math.round(clamp(maturityAge * randomRange(2.2, 3.4) * LIFESPAN_MULTIPLIER, 3200, 16000));
 }
 
 function buildChildMap(segments: Segment[]): Map<string, Segment[]> {
@@ -438,7 +440,7 @@ export function cloneWithMutation(
 
   let lifespan = parent.lifespan;
   if (chance(effectiveMutationRate)) {
-    lifespan = Math.round(clamp(lifespan + randomRange(-120, 120), 260, 1800));
+    lifespan = Math.round(clamp(lifespan + randomRange(-1200, 1200), 2600, 18000));
   }
 
   lifespan = Math.round((lifespan + deriveLifespanFromMaturity(maturityAge)) / 2);
