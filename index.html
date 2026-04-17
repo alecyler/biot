@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biot.Game — Evolving browser biots</title>
+    <meta name="description" content="Grow, hunt, mutate, and rescue strange little lineages in a living browser ecosystem." />
+    <meta name="theme-color" content="#09101a" />
+    <meta property="og:title" content="Biot.Game" />
+    <meta property="og:description" content="A living browser petri dish full of evolving biots." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/biot-mark.svg" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <main id="viewport">
+        <div id="brand-chip" aria-label="game branding">
+          <img src="/biot-mark.svg" alt="" />
+          <div>
+            <strong>Biot.Game</strong>
+            <span>Evolving browser biots</span>
+          </div>
+        </div>
+        <canvas id="world"></canvas>
+
+        <details id="stats-panel" class="hud-panel" open>
+          <summary>Stats</summary>
+          <div class="hud-card compact-card">
+            <div id="stats"></div>
+            <button id="toggleControlsBtn" type="button" class="secondary-btn">Controls & legend</button>
+          </div>
+        </details>
+
+        <details id="inspector-panel" class="hud-panel" open>
+          <summary>Inspector</summary>
+          <div class="hud-card inspector-card">
+            <div id="inspector"></div>
+            <div class="row inspector-actions">
+              <button id="saveSelectedBiotBtn" type="button" class="secondary-btn">Capture + edit in builder</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="builder-panel" class="hud-panel" open>
+          <summary>Biot Builder</summary>
+          <div class="hud-card builder-card">
+            <canvas id="builder-preview" width="320" height="320"></canvas>
+            <p id="builder-status" class="muted small-note"></p>
+            <div id="builder-segment-list" class="segment-list"></div>
+            <label>
+              Segment type
+              <select id="builder-segment-type"></select>
+            </label>
+            <label>
+              Angle
+              <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
+              <span id="builder-angle-value"></span>
+            </label>
+            <label>
+              Length
+              <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
+              <span id="builder-length-value"></span>
+            </label>
+            <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
+            <div class="row">
+              <button id="builder-add-child" type="button">Add child</button>
+              <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
+            </div>
+            <div class="row">
+              <button id="builder-spawn" type="button">Spawn biot</button>
+              <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
+            </div>
+            <label class="checkbox-row">
+              <input id="builder-spawn-mature" type="checkbox" checked />
+              <span>Spawn as mature adult</span>
+            </label>
+            <label>
+              Favorite name
+              <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
+            </label>
+            <div class="row">
+              <button id="builder-save-favorite" type="button">Save favorite</button>
+              <select id="builder-favorites"></select>
+            </div>
+            <div class="row">
+              <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
+              <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
+            </div>
+            <label>
+              Import / export blueprint JSON
+              <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
+            </label>
+            <div class="row">
+              <button id="builder-export" type="button">Copy/export</button>
+              <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="control-drawer">
+          <summary>Controls & legend</summary>
+
+          <section class="hud-card">
+            <h2>Simulation</h2>
+            <label>
+              Light
+              <input id="lightLevel" type="range" min="0" max="3" step="0.05" value="1.6" />
+              <span id="lightLevelValue"></span>
+            </label>
+            <label>
+              Heat
+              <input id="temperatureBias" type="range" min="0.35" max="1.75" step="0.05" value="1" />
+              <span id="temperatureBiasValue"></span>
+            </label>
+            <label>
+              Gravity
+              <input id="gravityScale" type="range" min="0" max="2.5" step="0.05" value="1" />
+              <span id="gravityScaleValue"></span>
+            </label>
+            <label>
+              Drag
+              <input id="drag" type="range" min="0.85" max="0.999" step="0.001" value="0.97" />
+              <span id="dragValue"></span>
+            </label>
+            <label>
+              Mutation
+              <input id="mutationRate" type="range" min="0" max="0.5" step="0.01" value="0.08" />
+              <span id="mutationRateValue"></span>
+            </label>
+            <label>
+              Spawn Energy
+              <input id="spawnEnergy" type="range" min="30" max="250" step="5" value="140" />
+              <span id="spawnEnergyValue"></span>
+            </label>
+            <label>
+              Population Cap
+              <input id="populationCap" type="range" min="10" max="500" step="1" value="255" />
+              <span id="populationCapValue"></span>
+            </label>
+            <div class="row">
+              <button id="pauseBtn">Pause</button>
+              <button id="resetBtn">Reset World</button>
+              <button id="resetLayoutBtn" type="button" class="secondary-btn">Reset panel layout</button>
+            </div>
+          </section>
+
+          <section class="hud-card">
+            <h2>Canvas tools</h2>
+            <label>
+              Click mode
+              <select id="canvasTool">
+                <option value="inspect">Inspect biot</option>
+                <option value="light">Paint light zone</option>
+                <option value="gravity">Paint gravity well</option>
+                <option value="fire">Ignite fire zone</option>
+                <option value="storm">Spawn tornado / storm</option>
+                <option value="mutate">Force mutation</option>
+              </select>
+            </label>
+            <p class="muted small-note">Choose a mode, then click the canvas. Use inspect to select biots again.</p>
+          </section>
+
+          
+        </details>
+
+        <div id="ad-banner-shell" hidden aria-label="advertisement"></div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
