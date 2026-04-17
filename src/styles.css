@@ -686,3 +686,41 @@ textarea::placeholder {
     right: 12px;
   }
 }
+
+
+#footer-links {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(9, 16, 26, 0.72);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  font-size: 12px;
+  color: #b8c7d8;
+}
+
+#footer-links a {
+  color: #d6e2ef;
+  text-decoration: none;
+}
+
+#footer-links a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  #footer-links {
+    left: 12px;
+    right: 12px;
+    bottom: 8px;
+    justify-content: center;
+  }
+}
