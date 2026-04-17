@@ -1215,6 +1215,67 @@ export class World {
     this.environmentVersion += 1;
   }
 
+  public spawnStarterFlower(): Biot {
+    const factories = [
+      () => this.makeFlowerStarterBiot(),
+      () => this.makeGliderGrazerStarterBiot(),
+      () => this.makeBulwarkGrazerStarterBiot(),
+    ];
+    const biot = pickOne(factories)();
+    biot.energy = this.getEnergyCapacity(biot);
+    this.biots.push(biot);
+    this.lineageBirths.set(biot.lineageId, 1);
+    this.environmentVersion += 1;
+    this.refreshStats();
+    return biot;
+  }
+
+  public spawnStarterHunter(): Biot {
+    const factories = [
+      () => this.makeWedgeHunterStarterBiot(),
+      () => this.makeSpinnerStarterBiot(),
+      () => this.makeLauncherSkirmisherStarterBiot(),
+      () => this.makeLightningPikeHunterStarterBiot(),
+      () => this.makeFlameSkaterHunterStarterBiot(),
+      () => this.makeFrostClampHunterStarterBiot(),
+      () => this.makeScavengerSkiffStarterBiot(),
+      () => this.makePouncerHunterStarterBiot(),
+      () => this.makeCarrionRipperStarterBiot(),
+    ];
+    const biot = pickOne(factories)();
+    biot.energy = this.getEnergyCapacity(biot);
+    this.biots.push(biot);
+    this.lineageBirths.set(biot.lineageId, 1);
+    this.environmentVersion += 1;
+    this.refreshStats();
+    return biot;
+  }
+
+  public triggerChaosEvent(): { fires: number; storms: number; mutations: number } {
+    const fires = randomInt(2, 4);
+    const storms = randomInt(1, 2);
+    const mutations = Math.min(this.biots.length, randomInt(3, 7));
+
+    for (let index = 0; index < fires; index += 1) {
+      this.addFireZoneAt(randomRange(40, Math.max(40, this.config.width - 40)), randomRange(40, Math.max(40, this.config.height - 40)));
+    }
+
+    for (let index = 0; index < storms; index += 1) {
+      this.addDisasterAt(randomRange(40, Math.max(40, this.config.width - 40)), randomRange(40, Math.max(40, this.config.height - 40)));
+    }
+
+    const available = this.biots.filter((biot) => !biot.dead);
+    for (let index = 0; index < mutations && available.length > 0; index += 1) {
+      const pickIndex = randomInt(0, available.length - 1);
+      const [biot] = available.splice(pickIndex, 1);
+      this.forceMutateBiotAt(biot.x, biot.y);
+    }
+
+    this.environmentVersion += 1;
+    this.refreshStats();
+    return { fires, storms, mutations };
+  }
+
   public spawnDesignedBiot(segments: Segment[], mature = true): Biot {
     const spawn = this.findDesignedBiotSpawn(segments);
     const biot = createDesignedBiot(

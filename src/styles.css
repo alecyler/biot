@@ -452,3 +452,19 @@ textarea::placeholder {
     bottom: 8px;
   }
 }
+
+
+@media (max-width: 800px) {
+  #action-strip {
+    right: 12px;
+  }
+
+  #action-strip button {
+    flex: 1 1 140px;
+  }
+
+  #hint-ribbon {
+    top: 188px;
+    right: 12px;
+  }
+}

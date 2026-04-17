@@ -3,7 +3,7 @@ import { World } from "./core/world";
 import { CanvasRenderer } from "./render/canvasRenderer";
 import { renderInspector, renderStats } from "./ui/controls";
 import { initializeDraggablePanels } from "./ui/draggablePanels";
-import { getSavedBlueprintSegments, initializeBiotBuilder, saveFavoriteBlueprint } from "./ui/builder";
+import { getSavedBlueprintSegments, initializeBiotBuilder, loadBiotIntoBuilder, saveFavoriteBlueprint } from "./ui/builder";
 import type { WorldConfig } from "./types/sim";
 
 const canvasNode = document.getElementById("world");
@@ -18,6 +18,9 @@ const splashCloseNode = document.getElementById("splash-close");
 const splashHintNode = document.getElementById("splash-hint");
 const helpBtnNode = document.getElementById("helpBtn");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
+const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
+const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
+const chaosEventBtnNode = document.getElementById("chaosEventBtn");
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
@@ -31,7 +34,10 @@ if (
   !(splashCloseNode instanceof HTMLButtonElement) ||
   !(splashHintNode instanceof HTMLElement) ||
   !(helpBtnNode instanceof HTMLButtonElement) ||
-  !(hintRibbonTextNode instanceof HTMLElement)
+  !(hintRibbonTextNode instanceof HTMLElement) ||
+  !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
+  !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
+  !(chaosEventBtnNode instanceof HTMLButtonElement)
 ) {
   throw new Error("Missing required DOM nodes for current UI.");
 }
@@ -48,6 +54,9 @@ const splashCloseBtn = splashCloseNode;
 const splashHint = splashHintNode;
 const helpBtn = helpBtnNode;
 const hintRibbonText = hintRibbonTextNode;
+const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
+const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
+const chaosEventBtn = chaosEventBtnNode;
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -75,7 +84,7 @@ let lastUiRefresh = 0;
 let lastSelectedBiotIdForUi: string | null = null;
 
 const splashHints = [
-  "Good first move: let a few flower types establish before adding hunters.",
+  "Good first move: start with flowers, then add hunters once food is stable.",
   "Cheap plants keep the food web alive. Too many predators will collapse it.",
   "Click a biot to inspect it, then save survivors back into the builder.",
   "Builder favorites are a great way to seed stable lineages quickly.",
@@ -83,6 +92,7 @@ const splashHints = [
 
 const ribbonHints = [
   "Try spawning a flower first, then a hunter.",
+  "The Chaos Event button is the fast way to make everything worse.",
   "If the world crashes, add more cheap producers.",
   "Saved favorites can become future cuckoo eggs.",
   "Inspect survivors and capture them back into the builder.",
@@ -122,11 +132,34 @@ window.addEventListener("resize", resize);
 
 refreshHintText();
 rotateRibbonHint();
+world.spawnStarterFlower();
+world.spawnStarterFlower();
+world.spawnStarterFlower();
+world.spawnStarterHunter();
 showSplash();
 
 helpBtn.addEventListener("click", () => {
   refreshHintText();
   showSplash();
+});
+
+quickSpawnFlowerBtn.addEventListener("click", () => {
+  world.spawnStarterFlower();
+  paused = false;
+  lastRenderedVersion = -1;
+});
+
+quickSpawnHunterBtn.addEventListener("click", () => {
+  world.spawnStarterHunter();
+  paused = false;
+  lastRenderedVersion = -1;
+});
+
+chaosEventBtn.addEventListener("click", () => {
+  const result = world.triggerChaosEvent();
+  hintRibbonText.textContent = `Chaos: ${result.mutations} mutations, ${result.fires} fires, ${result.storms} storms.`;
+  paused = false;
+  lastRenderedVersion = -1;
 });
 
 splashStartBtn.addEventListener("click", () => {
@@ -153,8 +186,9 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   if (!selected) return;
 
   saveFavoriteBlueprint(`Captured ${selected.id}`, selected.segments);
+  loadBiotIntoBuilder(selected.segments, `Captured ${selected.id}`);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
-  saveSelectedBiotBtn.textContent = "Saved to builder";
+  saveSelectedBiotBtn.textContent = "Species saved to builder";
 
   window.setTimeout(() => {
     saveSelectedBiotBtn.textContent = "Save selected biot to builder";
