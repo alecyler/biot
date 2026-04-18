@@ -63,6 +63,10 @@ const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 const resetWorldBtn = resetWorldBtnNode;
 
+const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+const WORLD_SNAPSHOT_KEY = "biots-world-snapshot-v1";
+const hadPendingResetNavigation = consumePendingResetNavigation();
+
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -81,7 +85,7 @@ const world = new World(config);
 world.setCuckooBlueprints(getSavedBlueprintSegments());
 const restoredWorld = restoreWorldSnapshot();
 if (!restoredWorld) {
-  world.seed(72);
+  seedFreshWorld();
 }
 
 const renderer = new CanvasRenderer(canvas);
@@ -149,10 +153,21 @@ function restoreWorldSnapshot(): boolean {
   try {
     const raw = window.localStorage.getItem(WORLD_SNAPSHOT_KEY);
     if (!raw) return false;
-    return world.importSnapshot(JSON.parse(raw));
+    const restored = world.importSnapshot(JSON.parse(raw));
+    if (!restored || world.biots.length === 0) {
+      clearWorldSnapshot();
+      return false;
+    }
+    return true;
   } catch {
+    clearWorldSnapshot();
     return false;
   }
+}
+
+function seedFreshWorld(): void {
+  world.seed(72);
+  world.setCuckooBlueprints(getSavedBlueprintSegments());
 }
 
 function clearWorldSnapshot(): void {
@@ -165,12 +180,7 @@ function clearWorldSnapshot(): void {
 
 function resetWorld(): void {
   clearWorldSnapshot();
-  world.seed(72);
-  world.setCuckooBlueprints(getSavedBlueprintSegments());
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("hunter");
+  seedFreshWorld();
   selectedBiotId = null;
   lastRenderedVersion = -1;
   paused = false;
@@ -225,15 +235,15 @@ function spawnFromSavedPool(category: "flower" | "hunter"): void {
 syncResponsiveUi();
 resize();
 initializeDraggablePanels();
-window.addEventListener("resize", resize);
+window.addEventListener("resize", () => {
+  syncResponsiveUi();
+  resize();
+});
 
 refreshHintText();
 rotateRibbonHint();
-initializeAdSenseBanner();
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("hunter");
+initializeAds();
+initializeMobilePanels();
 showSplash();
 
 if (hadPendingResetNavigation) {
@@ -265,9 +275,6 @@ chaosEventBtn.addEventListener("click", () => {
 
 resetWorldBtn.addEventListener("click", () => {
   resetWorld();
-});
-
-resetWorldBtn.addEventListener("click", () => {
   paused = true;
   hintRibbonText.textContent = rewardHookIsAvailable()
     ? "Resetting world and preparing the next reward break..."
