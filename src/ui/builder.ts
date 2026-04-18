@@ -381,7 +381,7 @@ export function deleteFavoriteBlueprint(name: string): FavoriteBlueprint[] {
 
 function getBuilderRefs(): BuilderRefs {
   return {
-    panel: getElement("builder-panel", HTMLDetailsElement),
+    panel: getElement("lab-panel", HTMLDetailsElement),
     canvas: getElement("builder-preview", HTMLCanvasElement),
     status: getElement("builder-status", HTMLElement),
     segmentList: getElement("builder-segment-list", HTMLElement),

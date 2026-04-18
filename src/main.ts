@@ -18,6 +18,9 @@ const splashStartNode = document.getElementById("splash-start");
 const splashBuilderNode = document.getElementById("splash-builder");
 const splashCloseNode = document.getElementById("splash-close");
 const splashHintNode = document.getElementById("splash-hint");
+const labPanelNode = document.getElementById("lab-panel");
+const labTabInspectorNode = document.getElementById("lab-tab-inspector");
+const labTabBuilderNode = document.getElementById("lab-tab-builder");
 const helpBtnNode = document.getElementById("helpBtn");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
@@ -36,6 +39,9 @@ if (
   !(splashBuilderNode instanceof HTMLButtonElement) ||
   !(splashCloseNode instanceof HTMLButtonElement) ||
   !(splashHintNode instanceof HTMLElement) ||
+  !(labPanelNode instanceof HTMLDetailsElement) ||
+  !(labTabInspectorNode instanceof HTMLButtonElement) ||
+  !(labTabBuilderNode instanceof HTMLButtonElement) ||
   !(helpBtnNode instanceof HTMLButtonElement) ||
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
@@ -55,6 +61,9 @@ const splashStartBtn = splashStartNode;
 const splashBuilderBtn = splashBuilderNode;
 const splashCloseBtn = splashCloseNode;
 const splashHint = splashHintNode;
+const labPanel = labPanelNode;
+const labTabInspector = labTabInspectorNode;
+const labTabBuilder = labTabBuilderNode;
 const helpBtn = helpBtnNode;
 const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
@@ -118,17 +127,36 @@ function hideSplash(): void {
   splashOverlay.hidden = true;
 }
 
+function setLabTab(tab: "inspector" | "builder", openPanel = false): void {
+  labPanel.dataset.labTab = tab;
+  const inspectorActive = tab === "inspector";
+  labTabInspector.classList.toggle("is-active", inspectorActive);
+  labTabInspector.setAttribute("aria-selected", inspectorActive ? "true" : "false");
+  labTabBuilder.classList.toggle("is-active", !inspectorActive);
+  labTabBuilder.setAttribute("aria-selected", inspectorActive ? "false" : "true");
+
+  const inspectorPane = document.getElementById("lab-pane-inspector");
+  const builderPane = document.getElementById("lab-pane-builder");
+  if (inspectorPane instanceof HTMLElement) {
+    inspectorPane.classList.toggle("is-active", inspectorActive);
+    inspectorPane.hidden = !inspectorActive;
+  }
+  if (builderPane instanceof HTMLElement) {
+    builderPane.classList.toggle("is-active", !inspectorActive);
+    builderPane.hidden = inspectorActive;
+  }
+  if (openPanel) {
+    labPanel.open = true;
+  }
+}
+
 function syncResponsiveUi(): void {
   const mobileUi = window.innerWidth <= 900 || window.matchMedia("(pointer: coarse)").matches;
   document.body.classList.toggle("mobile-ui", mobileUi);
-
-  const inspectorPanel = document.getElementById("inspector-panel");
-  const builderPanel = document.getElementById("builder-panel");
-  if (inspectorPanel instanceof HTMLDetailsElement) {
-    inspectorPanel.open = !mobileUi;
-  }
-  if (builderPanel instanceof HTMLDetailsElement) {
-    builderPanel.open = true;
+  if (mobileUi && !labPanel.open) {
+    setLabTab("inspector");
+  } else if (!mobileUi) {
+    labPanel.open = true;
   }
 }
 
@@ -187,20 +215,18 @@ function resetWorld(): void {
 }
 
 function initializeMobilePanels(): void {
-  if (!MOBILE_QUERY.matches) return;
-  const inspectorPanel = document.getElementById("inspector-panel");
-  const builderPanel = document.getElementById("builder-panel");
-  if (inspectorPanel instanceof HTMLDetailsElement) inspectorPanel.open = false;
-  if (builderPanel instanceof HTMLDetailsElement) builderPanel.open = false;
-  const panels = [inspectorPanel, builderPanel].filter((panel): panel is HTMLDetailsElement => panel instanceof HTMLDetailsElement);
-  for (const panel of panels) {
-    panel.addEventListener("toggle", () => {
-      if (!MOBILE_QUERY.matches || !panel.open) return;
-      for (const other of panels) {
-        if (other !== panel) other.open = false;
-      }
-    });
+  if (MOBILE_QUERY.matches) {
+    labPanel.open = false;
+    setLabTab("inspector");
   }
+
+  labTabInspector.addEventListener("click", () => {
+    setLabTab("inspector", true);
+  });
+
+  labTabBuilder.addEventListener("click", () => {
+    setLabTab("builder", true);
+  });
 }
 
 function refreshHintText(): void {
@@ -243,6 +269,7 @@ refreshHintText();
 rotateRibbonHint();
 initializeAds();
 initializeMobilePanels();
+setLabTab("inspector");
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
@@ -295,10 +322,7 @@ splashStartBtn.addEventListener("click", () => {
 splashBuilderBtn.addEventListener("click", () => {
   paused = false;
   hideSplash();
-  const builderPanel = document.getElementById("builder-panel");
-  if (builderPanel instanceof HTMLDetailsElement) {
-    builderPanel.open = true;
-  }
+  setLabTab("builder", true);
 });
 
 splashCloseBtn.addEventListener("click", () => {
@@ -313,6 +337,7 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   const capturedName = selected.lineageName ? `${selected.lineageName} capture` : `Captured ${selected.id}`;
   saveFavoriteBlueprint(capturedName, selected.segments);
   loadBiotIntoBuilder(selected.segments, capturedName);
+  setLabTab("builder", true);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   saveSelectedBiotBtn.textContent = "Species saved to builder";
 
@@ -324,6 +349,7 @@ saveSelectedBiotBtn.addEventListener("click", () => {
 initializeBiotBuilder((segments, mature, lineageName) => {
   const spawned = world.spawnDesignedBiot(segments, mature, lineageName);
   selectedBiotId = spawned.id;
+  setLabTab("inspector", MOBILE_QUERY.matches);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   lastRenderedVersion = -1;
   paused = false;
@@ -337,6 +363,7 @@ canvas.addEventListener("click", (event) => {
 
   const biot = world.findBiotAt(x, y);
   selectedBiotId = biot?.id ?? null;
+  if (biot) setLabTab("inspector", MOBILE_QUERY.matches);
 });
 
 window.addEventListener("beforeunload", saveWorldSnapshot);

@@ -80,69 +80,73 @@
 
         <canvas id="world"></canvas>
 
-        <details id="inspector-panel" class="hud-panel" open>
-          <summary>Inspector</summary>
-          <div class="hud-card inspector-card">
-            <div id="inspector"></div>
-            <div class="row inspector-actions">
-              <button id="saveSelectedBiotBtn" type="button" class="secondary-btn">Save selected biot to builder</button>
+        <details id="lab-panel" class="hud-panel" open data-lab-tab="inspector">
+          <summary>Biot Lab</summary>
+          <div class="hud-card lab-card">
+            <div class="lab-tabs" role="tablist" aria-label="Biot lab panels">
+              <button id="lab-tab-inspector" type="button" class="lab-tab is-active" role="tab" aria-selected="true" aria-controls="lab-pane-inspector">Inspector</button>
+              <button id="lab-tab-builder" type="button" class="lab-tab" role="tab" aria-selected="false" aria-controls="lab-pane-builder">Builder</button>
             </div>
-          </div>
-        </details>
 
-        <details id="builder-panel" class="hud-panel" open>
-          <summary>Biot Builder</summary>
-          <div class="hud-card builder-card">
-            <canvas id="builder-preview" width="320" height="320"></canvas>
-            <p id="builder-status" class="muted small-note"></p>
-            <div id="builder-segment-list" class="segment-list"></div>
-            <label>
-              Segment type
-              <select id="builder-segment-type"></select>
-            </label>
-            <label>
-              Angle
-              <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
-              <span id="builder-angle-value"></span>
-            </label>
-            <label>
-              Length
-              <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
-              <span id="builder-length-value"></span>
-            </label>
-            <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
-            <div class="row">
-              <button id="builder-add-child" type="button">Add child</button>
-              <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
-            </div>
-            <div class="row">
-              <button id="builder-spawn" type="button">Spawn biot</button>
-              <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
-            </div>
-            <label class="checkbox-row">
-              <input id="builder-spawn-mature" type="checkbox" checked />
-              <span>Spawn as mature adult</span>
-            </label>
-            <label>
-              Favorite name
-              <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
-            </label>
-            <div class="row">
-              <button id="builder-save-favorite" type="button">Save favorite</button>
-              <select id="builder-favorites"></select>
-            </div>
-            <div class="row">
-              <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
-              <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
-            </div>
-            <label>
-              Import / export blueprint JSON
-              <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
-            </label>
-            <div class="row">
-              <button id="builder-export" type="button">Copy/export</button>
-              <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
-            </div>
+            <section id="lab-pane-inspector" class="lab-pane is-active" role="tabpanel" aria-labelledby="lab-tab-inspector">
+              <div id="inspector"></div>
+              <div class="row inspector-actions">
+                <button id="saveSelectedBiotBtn" type="button" class="secondary-btn">Save selected biot to builder</button>
+              </div>
+            </section>
+
+            <section id="lab-pane-builder" class="lab-pane" role="tabpanel" aria-labelledby="lab-tab-builder" hidden>
+              <canvas id="builder-preview" width="320" height="320"></canvas>
+              <p id="builder-status" class="muted small-note"></p>
+              <div id="builder-segment-list" class="segment-list"></div>
+              <label>
+                Segment type
+                <select id="builder-segment-type"></select>
+              </label>
+              <label>
+                Angle
+                <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
+                <span id="builder-angle-value"></span>
+              </label>
+              <label>
+                Length
+                <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
+                <span id="builder-length-value"></span>
+              </label>
+              <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
+              <div class="row">
+                <button id="builder-add-child" type="button">Add child</button>
+                <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
+              </div>
+              <div class="row">
+                <button id="builder-spawn" type="button">Spawn biot</button>
+                <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
+              </div>
+              <label class="checkbox-row">
+                <input id="builder-spawn-mature" type="checkbox" checked />
+                <span>Spawn as mature adult</span>
+              </label>
+              <label>
+                Favorite name
+                <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
+              </label>
+              <div class="row">
+                <button id="builder-save-favorite" type="button">Save favorite</button>
+                <select id="builder-favorites"></select>
+              </div>
+              <div class="row">
+                <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
+                <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
+              </div>
+              <label>
+                Import / export blueprint JSON
+                <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
+              </label>
+              <div class="row">
+                <button id="builder-export" type="button">Copy/export</button>
+                <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
+              </div>
+            </section>
           </div>
         </details>
       </main>

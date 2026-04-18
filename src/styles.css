@@ -910,3 +910,156 @@ body.mobile-ui #ad-banner-shell {
     max-height: min(32svh, 240px);
   }
 }
+
+
+/* Shared Biot Lab panel */
+#lab-panel {
+  top: 12px;
+  right: 12px;
+  width: min(360px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+}
+
+#lab-panel .hud-card {
+  max-height: calc(100vh - 86px);
+  overflow: auto;
+}
+
+.lab-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.lab-tab {
+  background: rgba(255,255,255,0.08);
+  color: #d7e3f0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.lab-tab.is-active {
+  background: rgba(31,111,235,0.22);
+  border-color: rgba(74,168,255,0.45);
+}
+
+.lab-pane {
+  display: none;
+}
+
+.lab-pane.is-active {
+  display: block;
+}
+
+#lab-pane-inspector {
+  font-size: 14px;
+}
+
+#lab-pane-builder label,
+#lab-pane-builder .small-note,
+#lab-pane-builder .checkbox-row,
+#lab-pane-builder .segment-list {
+  font-size: 13px;
+}
+
+#lab-pane-builder textarea {
+  min-height: 108px;
+}
+
+body.mobile-ui #lab-panel {
+  position: fixed;
+  left: 8px !important;
+  right: 8px !important;
+  width: auto !important;
+  top: auto !important;
+  bottom: 52px;
+  z-index: 18;
+}
+
+body.mobile-ui #lab-panel > summary {
+  width: fit-content;
+  margin-left: auto;
+  margin-bottom: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(9, 16, 26, 0.92);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.24);
+}
+
+body.mobile-ui #lab-panel:not([open]) {
+  pointer-events: none;
+}
+
+body.mobile-ui #lab-panel:not([open]) > summary {
+  pointer-events: auto;
+}
+
+body.mobile-ui #lab-panel[open] {
+  pointer-events: none;
+}
+
+body.mobile-ui #lab-panel[open] > summary,
+body.mobile-ui #lab-panel[open] .hud-card {
+  pointer-events: auto;
+}
+
+body.mobile-ui #lab-panel .hud-card {
+  margin-top: 8px;
+  max-height: min(28svh, 210px);
+  overflow: auto;
+  padding: 9px;
+  border-radius: 16px;
+  background: rgba(9, 16, 26, 0.96);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.34);
+}
+
+body.mobile-ui .lab-tabs {
+  gap: 6px;
+}
+
+body.mobile-ui .lab-tab {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+body.mobile-ui #lab-pane-builder label,
+body.mobile-ui #lab-pane-builder .small-note,
+body.mobile-ui #lab-pane-builder .checkbox-row,
+body.mobile-ui #lab-pane-builder .segment-list,
+body.mobile-ui #lab-pane-inspector,
+body.mobile-ui #stats {
+  font-size: 12px;
+}
+
+body.mobile-ui #lab-pane-builder textarea {
+  min-height: 76px;
+}
+
+body.mobile-ui #builder-preview {
+  max-height: 108px;
+  object-fit: contain;
+}
+
+body.mobile-ui #lab-pane-builder .row button,
+body.mobile-ui #lab-pane-inspector .row button {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 0;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+@media (max-width: 520px) {
+  body.mobile-ui #lab-panel .hud-card {
+    max-height: min(25svh, 190px);
+  }
+}
