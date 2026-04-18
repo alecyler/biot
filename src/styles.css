@@ -806,6 +806,10 @@ textarea::placeholder {
   display: block;
 }
 
+.lab-pane[hidden] {
+  display: none !important;
+}
+
 .builder-workbench {
   display: grid;
   grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1.15fr);
@@ -968,30 +972,13 @@ textarea::placeholder {
   }
 
   .top-stats-bar {
-    left: 10px;
-    right: 10px;
-    top: calc(env(safe-area-inset-top, 0px) + 10px);
-    padding: 8px 10px;
-  }
-
-  #stats {
-    gap: 6px;
-  }
-
-  .stat-pill {
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-
-  #helpBtn {
-    top: calc(env(safe-area-inset-top, 0px) + 12px);
-    right: 12px;
+    display: none;
   }
 
   #action-strip {
     left: 10px;
     right: 10px;
-    top: calc(env(safe-area-inset-top, 0px) + 86px);
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
@@ -1003,6 +990,11 @@ textarea::placeholder {
     width: 100%;
     min-height: 42px;
     padding-inline: 10px;
+  }
+
+  #helpBtn {
+    top: calc(env(safe-area-inset-top, 0px) + 108px);
+    right: 12px;
   }
 
   #hint-ribbon {
@@ -1036,15 +1028,15 @@ textarea::placeholder {
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
-  .top-stats-bar {
-    left: 10px;
-    right: calc(50vw + 6px);
+  #helpBtn {
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    right: 12px;
   }
 
   #action-strip {
     left: 10px;
     right: calc(50vw + 6px);
-    top: calc(env(safe-area-inset-top, 0px) + 88px);
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
