@@ -740,6 +740,9 @@ textarea::placeholder {
   left: 16px;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   z-index: 13;
+  left: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 13;
   display: flex;
   align-items: center;
   gap: 8px;
