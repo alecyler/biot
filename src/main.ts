@@ -21,10 +21,10 @@ const helpBtnNode = document.getElementById("helpBtn");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
 const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
-const resetWorldBtnNode = document.getElementById("resetWorldBtn");
 const chaosEventBtnNode = document.getElementById("chaosEventBtn");
 const helpDrawerNode = document.getElementById("help-drawer");
 const helpDrawerCloseNode = document.getElementById("helpDrawerClose");
+const resetWorldBtnNode = document.getElementById("resetWorldBtn");
 const labPanelNode = document.getElementById("lab-panel");
 const labTabInspectorNode = document.getElementById("lab-tab-inspector");
 const labTabBuilderNode = document.getElementById("lab-tab-builder");
@@ -46,10 +46,10 @@ if (
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
   !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
-  !(resetWorldBtnNode instanceof HTMLButtonElement) ||
   !(chaosEventBtnNode instanceof HTMLButtonElement) ||
   !(helpDrawerNode instanceof HTMLElement) ||
   !(helpDrawerCloseNode instanceof HTMLButtonElement) ||
+  !(resetWorldBtnNode instanceof HTMLButtonElement) ||
   !(labPanelNode instanceof HTMLDetailsElement) ||
   !(labTabInspectorNode instanceof HTMLButtonElement) ||
   !(labTabBuilderNode instanceof HTMLButtonElement) ||
@@ -73,64 +73,15 @@ const helpBtn = helpBtnNode;
 const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
-const resetWorldBtn = resetWorldBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 const helpDrawer = helpDrawerNode;
 const helpDrawerClose = helpDrawerCloseNode;
+const resetWorldBtn = resetWorldBtnNode;
 const labPanel = labPanelNode;
 const labTabInspector = labTabInspectorNode;
 const labTabBuilder = labTabBuilderNode;
 const labPaneInspector = labPaneInspectorNode;
 const labPaneBuilder = labPaneBuilderNode;
-
-const WORLD_STORAGE_KEY = "biotarium-world-snapshot-v1";
-const WORLD_SAVE_INTERVAL_MS = 2000;
-let pendingSaveTimer: number | null = null;
-let lastSavedTick = -1;
-let lastSaveAt = 0;
-
-function saveWorldSnapshot(): void {
-  try {
-    const snapshot = world.exportSnapshot();
-    window.localStorage.setItem(WORLD_STORAGE_KEY, JSON.stringify(snapshot));
-    lastSavedTick = world.stats.tick;
-    lastSaveAt = performance.now();
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function scheduleWorldSave(delayMs = 250): void {
-  if (pendingSaveTimer !== null) window.clearTimeout(pendingSaveTimer);
-  pendingSaveTimer = window.setTimeout(() => {
-    pendingSaveTimer = null;
-    saveWorldSnapshot();
-  }, delayMs);
-}
-
-function clearSavedWorldSnapshot(): void {
-  try {
-    window.localStorage.removeItem(WORLD_STORAGE_KEY);
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function tryLoadSavedWorld(): boolean {
-  try {
-    const raw = window.localStorage.getItem(WORLD_STORAGE_KEY);
-    if (!raw) return false;
-    const snapshot = JSON.parse(raw);
-    const loaded = world.importSnapshot(snapshot);
-    if (loaded) {
-      lastSavedTick = world.stats.tick;
-      return true;
-    }
-  } catch {
-    // Ignore storage failures.
-  }
-  return false;
-}
 
 
 const config: WorldConfig = {
@@ -148,10 +99,7 @@ const config: WorldConfig = {
 
 const world = new World(config);
 world.setCuckooBlueprints(getSavedBlueprintSegments());
-const loadedSavedWorld = tryLoadSavedWorld();
-if (!loadedSavedWorld) {
-  world.seed(72);
-}
+world.seed(72);
 
 const renderer = new CanvasRenderer(canvas);
 
@@ -160,6 +108,46 @@ let selectedBiotId: string | null = null;
 let lastRenderedVersion = -1;
 let lastUiRefresh = 0;
 let lastSelectedBiotIdForUi: string | null = null;
+
+const WORLD_SNAPSHOT_STORAGE_KEY = "biotarium-world-snapshot-v1";
+let lastSavedTick = -1;
+
+function saveWorldSnapshot(): void {
+  try {
+    const snapshot = world.exportSnapshot();
+    window.localStorage.setItem(WORLD_SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot));
+    lastSavedTick = world.stats.tick;
+  } catch {
+    // Ignore persistence failures.
+  }
+}
+
+function clearWorldSnapshot(): void {
+  try {
+    window.localStorage.removeItem(WORLD_SNAPSHOT_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+  lastSavedTick = -1;
+}
+
+function loadWorldSnapshot(): boolean {
+  try {
+    const raw = window.localStorage.getItem(WORLD_SNAPSHOT_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    const loaded = world.importSnapshot(parsed);
+    if (loaded) {
+      lastSavedTick = world.stats.tick;
+      return true;
+    }
+  } catch {
+    // Ignore malformed storage.
+  }
+  clearWorldSnapshot();
+  return false;
+}
+
 
 const splashHints = [
   "Good first move: start with flowers, then add hunters once food is stable.",
@@ -258,17 +246,17 @@ refreshHintText();
 rotateRibbonHint();
 setLabTab("inspector", false);
 initializeAdSenseBanner();
-if (!loadedSavedWorld) {
+const restoredSnapshot = loadWorldSnapshot();
+if (!restoredSnapshot) {
   spawnFromSavedPool("flower");
   spawnFromSavedPool("flower");
   spawnFromSavedPool("flower");
   spawnFromSavedPool("hunter");
   showSplash();
-  scheduleWorldSave(0);
+  saveWorldSnapshot();
 } else {
   paused = false;
   hideSplash();
-  hintRibbonText.textContent = "Loaded your last tank. Use Reset world to start fresh.";
 }
 
 helpBtn.addEventListener("click", () => {
@@ -283,17 +271,12 @@ helpDrawerClose.addEventListener("click", () => {
 quickSpawnFlowerBtn.addEventListener("click", () => {
   spawnFromSavedPool("flower", 10);
   hintRibbonText.textContent = "Dropped in a bouquet of 10 flowers to help rebalance the tank.";
-  scheduleWorldSave();
+  saveWorldSnapshot();
 });
 
 quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
-  scheduleWorldSave();
-});
-
-resetWorldBtn.addEventListener("click", () => {
-  clearSavedWorldSnapshot();
-  window.location.reload();
+  saveWorldSnapshot();
 });
 
 labTabInspector.addEventListener("click", () => {
@@ -315,7 +298,12 @@ chaosEventBtn.addEventListener("click", () => {
   hintRibbonText.textContent = `Chaos: ${result.mutations} mutations, ${result.fires} fires, ${result.storms} storms.`;
   paused = false;
   lastRenderedVersion = -1;
-  scheduleWorldSave();
+  saveWorldSnapshot();
+});
+
+resetWorldBtn.addEventListener("click", () => {
+  clearWorldSnapshot();
+  window.location.reload();
 });
 
 splashStartBtn.addEventListener("click", () => {
@@ -346,7 +334,6 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   setLabTab("builder", false);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   saveSelectedBiotBtn.textContent = "Species saved to builder";
-  scheduleWorldSave();
 
   window.setTimeout(() => {
     saveSelectedBiotBtn.textContent = "Save selected biot to builder";
@@ -359,7 +346,7 @@ initializeBiotBuilder((segments, mature) => {
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   lastRenderedVersion = -1;
   paused = false;
-  scheduleWorldSave();
+  saveWorldSnapshot();
 });
 
 canvas.addEventListener("click", (event) => {
@@ -458,23 +445,11 @@ function frame(now: number): void {
 
   updateUi(now, selectedBiot);
 
-  if (!paused && world.stats.tick !== lastSavedTick && now - lastSaveAt >= WORLD_SAVE_INTERVAL_MS) {
+  if (!paused && world.stats.tick !== lastSavedTick && world.stats.tick % 40 === 0) {
     saveWorldSnapshot();
   }
 
   requestAnimationFrame(frame);
 }
-
-window.addEventListener("pagehide", () => {
-  if (pendingSaveTimer !== null) {
-    window.clearTimeout(pendingSaveTimer);
-    pendingSaveTimer = null;
-  }
-  saveWorldSnapshot();
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") saveWorldSnapshot();
-});
 
 requestAnimationFrame(frame);
