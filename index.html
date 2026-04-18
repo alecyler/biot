@@ -27,6 +27,7 @@
         <h1>Biotarium.com 
         </h1> <p>©2026 Last Knight Games</p>
         <p class="splash-subtitle">Build creatures. Watch them survive (or die). Start simple. Add predators later.</p>
+        <p class="splash-mode-note"><strong>Mobile tip:</strong> portrait is great for building and steering. Landscape is calmer when you mostly want to watch the tank.</p>
         <ul class="splash-points">
           <li>Biots evolve, hunt, and die on their own.</li>
           <li>Use the builder to make species and throw them into the food web.</li>
@@ -40,6 +41,8 @@
             <p><strong>Builder:</strong> click segment chips or endpoints in the preview, change type, angle, and length, then spawn.</p>
             <p><strong>Inspector:</strong> click any biot in the world to inspect it and save survivors back into the builder.</p>
             <p><strong>Legend:</strong> green/photo feeds on light, red/predator bites, blue/propulsion moves, gold/reproduction lays eggs, gray/structure supports, silver/armor hardens.</p>
+            <p><strong>Build ideas:</strong> structure + photo makes dependable flowers; perception + brain + propulsion makes rovers; launcher/lightning/flame/frost shine once food is stable.</p>
+            <p><strong>Hidden-feeling tricks:</strong> glow boosts light harvesting in dim spots but also increases visibility; camo does the reverse. Advanced segments wake up when a biot reaches maturity.</p>
           </div>
         </details>
         <div class="row splash-actions">
@@ -65,7 +68,7 @@
         </div>
 
         <div id="action-strip" aria-label="quick actions">
-          <button id="quickSpawnFlowerBtn" type="button" class="secondary-btn inline-btn">🌼 Spawn flower</button>
+          <button id="quickSpawnFlowerBtn" type="button" class="secondary-btn inline-btn">🌼 Spawn flowers</button>
           <button id="quickSpawnHunterBtn" type="button" class="secondary-btn inline-btn">🦷 Spawn hunter</button>
           <button id="chaosEventBtn" type="button">🌩️ Chaos Event</button>
           <button id="resetWorldBtn" type="button" class="secondary-btn inline-btn">↺ Reset world</button>
@@ -79,6 +82,49 @@
         <div id="ad-banner-shell" hidden aria-label="Advertisement"></div>
 
         <canvas id="world"></canvas>
+
+        <aside id="help-drawer" hidden aria-label="Field guide help">
+          <div class="help-drawer-card">
+            <div class="help-drawer-header">
+              <div>
+                <strong>Field Guide</strong>
+                <span>Tips, legend, and build nudges</span>
+              </div>
+              <button id="helpDrawerClose" type="button" class="secondary-btn inline-btn" aria-label="Close field guide">×</button>
+            </div>
+            <p class="help-drawer-lead">Start with flowers, let food accumulate, then introduce hunters. Use the builder to save stable species and reseed them later.</p>
+            <p id="help-drawer-tip" class="help-drawer-tip"></p>
+            <details class="help-drawer-section" open>
+              <summary>Quick legend</summary>
+              <ul class="help-legend-list">
+                <li><span class="swatch yellow"></span> Bright zones feed plant-heavy biots.</li>
+                <li><span class="swatch blue"></span> Blue gravity pulls; red gravity pushes.</li>
+                <li><span class="swatch orange"></span> Fire zones hurt and heat the tank.</li>
+                <li><span class="swatch green"></span> Green pellets are carrion or spores.</li>
+                <li><span class="swatch gray"></span> Pale rings usually mark young or selected biots.</li>
+              </ul>
+            </details>
+            <details class="help-drawer-section">
+              <summary>Build suggestions</summary>
+              <ul class="help-legend-list">
+                <li>Flower core: photo + reproduction + structure.</li>
+                <li>Mobile grazer: photo + glide or propulsion + reproduction.</li>
+                <li>Smart hunter: predator + propulsion + perception + brain.</li>
+                <li>Late-game weapons like launcher, flame, frost, and lightning work best after a food web exists.</li>
+                <li>Glow boosts light harvesting in dim spots, but it also increases visibility. Camo does the opposite.</li>
+              </ul>
+            </details>
+            <details class="help-drawer-section">
+              <summary>Hidden-ish unlock notes</summary>
+              <ul class="help-legend-list">
+                <li>Eyes and brains are most useful when paired with movement. A stationary thinker just burns energy.</li>
+                <li>Some advanced segments only become active after maturity, so juveniles may look simpler than the adults they become.</li>
+                <li>Saved favorites can come back later through cuckoo eggs, so stable species are worth preserving.</li>
+                <li>Portrait is best for active play. Landscape is better when you mostly want to watch the tank.</li>
+              </ul>
+            </details>
+          </div>
+        </aside>
 
         <details id="lab-panel" class="hud-panel" open data-lab-tab="inspector">
           <summary>Biot Lab</summary>
@@ -96,55 +142,115 @@
             </section>
 
             <section id="lab-pane-builder" class="lab-pane" role="tabpanel" aria-labelledby="lab-tab-builder" hidden>
-              <canvas id="builder-preview" width="320" height="320"></canvas>
-              <p id="builder-status" class="muted small-note"></p>
-              <div id="builder-segment-list" class="segment-list"></div>
-              <label>
-                Segment type
-                <select id="builder-segment-type"></select>
-              </label>
-              <label>
-                Angle
-                <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
-                <span id="builder-angle-value"></span>
-              </label>
-              <label>
-                Length
-                <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
-                <span id="builder-length-value"></span>
-              </label>
-              <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
-              <div class="row">
-                <button id="builder-add-child" type="button">Add child</button>
-                <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
-              </div>
-              <div class="row">
-                <button id="builder-spawn" type="button">Spawn biot</button>
-                <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
-              </div>
-              <label class="checkbox-row">
-                <input id="builder-spawn-mature" type="checkbox" checked />
-                <span>Spawn as mature adult</span>
-              </label>
-              <label>
-                Favorite name
-                <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
-              </label>
-              <div class="row">
-                <button id="builder-save-favorite" type="button">Save favorite</button>
-                <select id="builder-favorites"></select>
-              </div>
-              <div class="row">
-                <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
-                <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
-              </div>
-              <label>
-                Import / export blueprint JSON
-                <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
-              </label>
-              <div class="row">
-                <button id="builder-export" type="button">Copy/export</button>
-                <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
+              <div class="builder-workbench">
+                <div class="builder-stage-card">
+                  <div class="builder-stage-header">
+                    <div>
+                      <strong>Workbench</strong>
+                      <span>Click joints to select. Drag the bright tip to shape branches.</span>
+                    </div>
+                  </div>
+                  <canvas id="builder-preview" width="320" height="320"></canvas>
+                  <p id="builder-status" class="muted small-note"></p>
+                </div>
+
+                <div class="builder-controls-stack">
+                  <section class="builder-section-card">
+                    <div class="builder-section-head">
+                      <strong>Segments</strong>
+                      <span>Select a limb to edit</span>
+                    </div>
+                    <div id="builder-segment-list" class="segment-list"></div>
+                  </section>
+
+                  <section class="builder-section-card">
+                    <div class="builder-section-head">
+                      <strong>Edit selected</strong>
+                      <span>Fast nudges plus sliders</span>
+                    </div>
+                    <label>
+                      Segment type
+                      <select id="builder-segment-type"></select>
+                    </label>
+                    <div id="builder-type-chips" class="type-chip-grid" aria-label="Common segment types"></div>
+                    <label>
+                      Angle
+                      <div class="builder-adjust-row">
+                        <div class="builder-stepper" aria-label="Angle nudges">
+                          <button id="builder-angle-minus-big" type="button" class="secondary-btn inline-btn">-45°</button>
+                          <button id="builder-angle-minus" type="button" class="secondary-btn inline-btn">-15°</button>
+                          <button id="builder-angle-zero" type="button" class="secondary-btn inline-btn">0°</button>
+                          <button id="builder-angle-plus" type="button" class="secondary-btn inline-btn">+15°</button>
+                          <button id="builder-angle-plus-big" type="button" class="secondary-btn inline-btn">+45°</button>
+                        </div>
+                        <div class="builder-range-row">
+                          <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
+                          <span id="builder-angle-value"></span>
+                        </div>
+                      </div>
+                    </label>
+                    <label>
+                      Length
+                      <div class="builder-adjust-row">
+                        <div class="builder-stepper" aria-label="Length nudges">
+                          <button id="builder-length-minus-big" type="button" class="secondary-btn inline-btn">-4</button>
+                          <button id="builder-length-minus" type="button" class="secondary-btn inline-btn">-1</button>
+                          <button id="builder-length-reset" type="button" class="secondary-btn inline-btn">12</button>
+                          <button id="builder-length-plus" type="button" class="secondary-btn inline-btn">+1</button>
+                          <button id="builder-length-plus-big" type="button" class="secondary-btn inline-btn">+4</button>
+                        </div>
+                        <div class="builder-range-row">
+                          <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
+                          <span id="builder-length-value"></span>
+                        </div>
+                      </div>
+                    </label>
+                    <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
+                    <div class="row">
+                      <button id="builder-add-child" type="button">Add child</button>
+                      <button id="builder-duplicate" type="button" class="secondary-btn inline-btn">Duplicate selected</button>
+                      <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
+                    </div>
+                    <div class="row">
+                      <button id="builder-mirror-branch" type="button" class="secondary-btn inline-btn">Mirror branch</button>
+                    </div>
+                  </section>
+
+                  <section class="builder-section-card">
+                    <div class="builder-section-head">
+                      <strong>Deploy</strong>
+                      <span>Spawn and preserve species</span>
+                    </div>
+                    <div class="row">
+                      <button id="builder-spawn" type="button">Spawn biot</button>
+                      <button id="builder-reset" type="button" class="secondary-btn inline-btn">New blueprint</button>
+                    </div>
+                    <label class="checkbox-row">
+                      <input id="builder-spawn-mature" type="checkbox" checked />
+                      <span>Spawn as mature adult</span>
+                    </label>
+                    <label>
+                      Favorite name
+                      <input id="builder-favorite-name" type="text" placeholder="e.g. Zapper crab" />
+                    </label>
+                    <div class="row">
+                      <button id="builder-save-favorite" type="button">Save favorite</button>
+                      <select id="builder-favorites"></select>
+                    </div>
+                    <div class="row">
+                      <button id="builder-load-favorite" type="button" class="secondary-btn inline-btn">Load</button>
+                      <button id="builder-delete-favorite" type="button" class="secondary-btn inline-btn">Delete saved</button>
+                    </div>
+                    <label>
+                      Import / export blueprint JSON
+                      <textarea id="builder-import-area" rows="7" spellcheck="false"></textarea>
+                    </label>
+                    <div class="row">
+                      <button id="builder-export" type="button">Copy/export</button>
+                      <button id="builder-import" type="button" class="secondary-btn inline-btn">Import</button>
+                    </div>
+                  </section>
+                </div>
               </div>
             </section>
           </div>
