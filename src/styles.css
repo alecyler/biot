@@ -307,6 +307,23 @@ select {
   margin-top: 0;
 }
 
+.builder-adjust-row {
+  display: grid;
+  gap: 8px;
+}
+
+.builder-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.builder-stepper .inline-btn {
+  min-width: 52px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
 input[type="text"],
 textarea {
   width: 100%;
@@ -1284,6 +1301,13 @@ body.mobile-ui.landscape-mobile #lab-panel {
   bottom: 56px;
 }
 
+body.mobile-ui #lab-panel {
+  resize: none;
+  overflow: visible;
+  max-width: none;
+  max-height: none;
+}
+
 @media (max-width: 520px) {
   body.mobile-ui.portrait-mobile #lab-panel {
     bottom: 166px;
@@ -1311,11 +1335,16 @@ body.mobile-ui.landscape-mobile #hint-ribbon {
 }
 
 #lab-panel {
-  resize: none;
+  resize: both;
+  overflow: auto;
+  min-width: 320px;
+  min-height: 280px;
+  max-width: min(92vw, 860px);
+  max-height: min(88vh, 920px);
 }
 
 #lab-panel > summary::after {
-  content: " drag";
+  content: " drag + resize";
   font-size: 11px;
   color: rgba(157, 176, 199, 0.8);
   margin-left: 6px;

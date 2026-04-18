@@ -40,8 +40,18 @@ interface BuilderRefs {
   typeSelect: HTMLSelectElement;
   angleInput: HTMLInputElement;
   angleValue: HTMLElement;
+  angleMinusBigBtn: HTMLButtonElement;
+  angleMinusBtn: HTMLButtonElement;
+  angleZeroBtn: HTMLButtonElement;
+  anglePlusBtn: HTMLButtonElement;
+  anglePlusBigBtn: HTMLButtonElement;
   lengthInput: HTMLInputElement;
   lengthValue: HTMLElement;
+  lengthMinusBigBtn: HTMLButtonElement;
+  lengthMinusBtn: HTMLButtonElement;
+  lengthResetBtn: HTMLButtonElement;
+  lengthPlusBtn: HTMLButtonElement;
+  lengthPlusBigBtn: HTMLButtonElement;
   selectedParent: HTMLElement;
   spawnBtn: HTMLButtonElement;
   addChildBtn: HTMLButtonElement;
@@ -388,8 +398,18 @@ function getBuilderRefs(): BuilderRefs {
     typeSelect: getElement("builder-segment-type", HTMLSelectElement),
     angleInput: getElement("builder-angle", HTMLInputElement),
     angleValue: getElement("builder-angle-value", HTMLElement),
+    angleMinusBigBtn: getElement("builder-angle-minus-big", HTMLButtonElement),
+    angleMinusBtn: getElement("builder-angle-minus", HTMLButtonElement),
+    angleZeroBtn: getElement("builder-angle-zero", HTMLButtonElement),
+    anglePlusBtn: getElement("builder-angle-plus", HTMLButtonElement),
+    anglePlusBigBtn: getElement("builder-angle-plus-big", HTMLButtonElement),
     lengthInput: getElement("builder-length", HTMLInputElement),
     lengthValue: getElement("builder-length-value", HTMLElement),
+    lengthMinusBigBtn: getElement("builder-length-minus-big", HTMLButtonElement),
+    lengthMinusBtn: getElement("builder-length-minus", HTMLButtonElement),
+    lengthResetBtn: getElement("builder-length-reset", HTMLButtonElement),
+    lengthPlusBtn: getElement("builder-length-plus", HTMLButtonElement),
+    lengthPlusBigBtn: getElement("builder-length-plus-big", HTMLButtonElement),
     selectedParent: getElement("builder-parent-target", HTMLElement),
     spawnBtn: getElement("builder-spawn", HTMLButtonElement),
     addChildBtn: getElement("builder-add-child", HTMLButtonElement),
@@ -598,6 +618,31 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     refreshControls();
   });
 
+
+  const updateAngle = (delta: number, absolute = false): void => {
+    const selected = getSegment(selectedSegmentId);
+    if (!selected) return;
+    const nextDegrees = absolute
+      ? delta
+      : Math.max(-180, Math.min(180, Math.round((selected.angle * 180) / Math.PI / 5) * 5 + delta));
+    selected.angle = (nextDegrees * Math.PI) / 180;
+    refs.angleInput.value = String(nextDegrees);
+    refs.angleValue.textContent = `${nextDegrees}°`;
+    renderPreview();
+  };
+
+  const updateLength = (delta: number, absolute = false): void => {
+    const selected = getSegment(selectedSegmentId);
+    if (!selected) return;
+    const nextLength = absolute
+      ? delta
+      : Math.max(6, Math.min(24, Math.round(selected.length) + delta));
+    selected.length = nextLength;
+    refs.lengthInput.value = String(nextLength);
+    refs.lengthValue.textContent = String(nextLength);
+    renderPreview();
+  };
+
   refs.angleInput.addEventListener("input", () => {
     const selected = getSegment(selectedSegmentId);
     if (!selected) return;
@@ -606,6 +651,13 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     renderPreview();
   });
 
+
+  refs.angleMinusBigBtn.addEventListener("click", () => updateAngle(-45));
+  refs.angleMinusBtn.addEventListener("click", () => updateAngle(-15));
+  refs.angleZeroBtn.addEventListener("click", () => updateAngle(0, true));
+  refs.anglePlusBtn.addEventListener("click", () => updateAngle(15));
+  refs.anglePlusBigBtn.addEventListener("click", () => updateAngle(45));
+
   refs.lengthInput.addEventListener("input", () => {
     const selected = getSegment(selectedSegmentId);
     if (!selected) return;
@@ -613,6 +665,13 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     refs.lengthValue.textContent = refs.lengthInput.value;
     renderPreview();
   });
+
+
+  refs.lengthMinusBigBtn.addEventListener("click", () => updateLength(-4));
+  refs.lengthMinusBtn.addEventListener("click", () => updateLength(-1));
+  refs.lengthResetBtn.addEventListener("click", () => updateLength(12, true));
+  refs.lengthPlusBtn.addEventListener("click", () => updateLength(1));
+  refs.lengthPlusBigBtn.addEventListener("click", () => updateLength(4));
 
   refs.addChildBtn.addEventListener("click", () => {
     const parentId = selectedParentId || selectedSegmentId || "root";

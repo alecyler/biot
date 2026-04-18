@@ -126,6 +126,7 @@ const splashHints = [
   "Advanced segments stay dormant until maturity, so juvenile builds can look weaker than the adults they become.",
   "Armor and structure stretch lifespan; cheap flowers are still the backbone of a healthy tank.",
   "Want weird hidden-feeling tech? Try perception + brain + launcher, or camo + glow for risky ambushers.",
+  "Stay tuned: launch builds focus on making the existing organs matter. Stranger lineages are still to come.",
 ];
 
 const ribbonHints = [
@@ -141,6 +142,7 @@ const ribbonHints = [
   "Launcher, lightning, flame, and frost work best once a food web already exists.",
   "Portrait keeps controls close; landscape is nicer when you mostly want to watch.",
   "Camo cuts visibility. Glow does the opposite. Mixing them creates risky tradeoffs.",
+  "For now, glow helps eggs and dim-light plants. Stranger reproductive tricks are being saved for later updates.",
 ];
 
 function showSplash(): void {

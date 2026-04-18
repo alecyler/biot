@@ -70,8 +70,8 @@ const FROST_RANGE_BASE = 18;
 const FROST_RANGE_PER_SEGMENT = 7;
 const FROST_FREEZE_TICKS = 14;
 const FROST_DAMAGE = 1.1;
-const FIREPROOF_FIRE_REDUCTION = 0.22;
-const INSULATION_COLD_REDUCTION = 0.18;
+const FIREPROOF_FIRE_REDUCTION = 0.28;
+const INSULATION_COLD_REDUCTION = 0.24;
 const WEB_ZONE_LIFE = 180;
 const WEB_ZONE_RADIUS = 26;
 const WEB_PULL_FORCE = 0.03;
@@ -125,9 +125,9 @@ const BRAIN_JOINT_FORCE = 0.085;
 const BRAIN_JOINT_RETURN = 0.12;
 const TIER_TWO_THRESHOLD = 3;
 const TIER_THREE_THRESHOLD = 5;
-const CAMO_STEALTH_PER_SEGMENT = 0.1;
-const GLOW_VISIBILITY_PER_SEGMENT = 0.12;
-const GLOW_LIGHT_BOOST = 0.05;
+const CAMO_STEALTH_PER_SEGMENT = 0.14;
+const GLOW_VISIBILITY_PER_SEGMENT = 0.16;
+const GLOW_LIGHT_BOOST = 0.08;
 
 const CARRION_SPAWN_CHANCE = 0.9;
 const CARRION_DECAY = 0.994;
@@ -763,12 +763,12 @@ export class World {
           venomCount * 0.001 +
           poisonCount * 0.004 +
           antivenomCount * 0.003 +
-          glowCount * 0.004 +
+          glowCount * 0.0025 +
           lightningCount * 0.006 +
           flameCount * 0.007 +
           frostCount * 0.006 +
-          fireproofCount * 0.003 +
-          insulationCount * 0.003 +
+          fireproofCount * 0.0015 +
+          insulationCount * 0.0015 +
           camoCount * 0.002 -
           reproductionBatteryEfficiency -
           structureSupport +
@@ -1569,7 +1569,8 @@ export class World {
         biot.angularVelocity += disaster.spin * 0.05 * normalized;
 
         if (dist < disaster.coreRadius) {
-          biot.energy -= DISASTER_DAMAGE * (1.2 + normalized);
+          const disasterGuard = 1 - Math.min(0.45, biot.segments.filter((segment) => segment.type === "structure").length * 0.03 + biot.segments.filter((segment) => segment.type === "fireproof").length * 0.06 + biot.segments.filter((segment) => segment.type === "insulation").length * 0.05);
+          biot.energy -= DISASTER_DAMAGE * (1.2 + normalized) * disasterGuard;
           if (chance(DISASTER_SEGMENT_STRIP_CHANCE) && biot.segments.length > 3) {
             this.stripRandomSegment(biot);
           }
@@ -1578,7 +1579,8 @@ export class World {
             this.stats.deaths += 1;
           }
         } else if (dist < disaster.radius * 0.7) {
-          biot.energy -= DISASTER_DAMAGE * 0.18 * normalized;
+          const disasterGuard = 1 - Math.min(0.35, biot.segments.filter((segment) => segment.type === "structure").length * 0.02 + biot.segments.filter((segment) => segment.type === "fireproof").length * 0.05 + biot.segments.filter((segment) => segment.type === "insulation").length * 0.04);
+          biot.energy -= DISASTER_DAMAGE * 0.18 * normalized * disasterGuard;
         }
       }
 
@@ -1681,8 +1683,9 @@ export class World {
           adjustedTarget.to.x,
           adjustedTarget.to.y,
         );
+        const visibilityFactor = this.getVisibilityFactorForBiot(biot);
         const allowedDistance =
-          LAUNCHER_HIT_THICKNESS + BODY_THICKNESS_BASE + (targetLine.segment.type === "armor" ? ARMOR_THICKNESS_BONUS : 0);
+          (LAUNCHER_HIT_THICKNESS + BODY_THICKNESS_BASE + (targetLine.segment.type === "armor" ? ARMOR_THICKNESS_BONUS : 0)) * clamp(visibilityFactor, 0.72, 1.18);
 
         if (distance <= allowedDistance && distance < bestDistance) {
           bestDistance = distance;
@@ -3042,7 +3045,11 @@ export class World {
       vx: randomRange(-0.12, 0.12) + (index - 1) * 0.03,
       vy: randomRange(-0.12, 0.12),
       life: randomInt(EGG_HATCH_MIN, EGG_HATCH_MAX),
-      health: EGG_BASE_HEALTH + child.segments.filter((segment) => segment.type === "reproduction").length * 0.5,
+      health:
+        EGG_BASE_HEALTH +
+        child.segments.filter((segment) => segment.type === "reproduction").length * 0.5 +
+        parent.segments.filter((segment) => segment.type === "glow").length * 0.45 +
+        parent.segments.filter((segment) => segment.type === "camo").length * 0.2,
       child,
       kind,
       lineageId: child.lineageId,
@@ -3087,7 +3094,8 @@ export class World {
         const dy = this.getWrappedDelta(egg.y, biot.y, this.config.height);
         const dist = Math.hypot(dx, dy);
         if (dist < 18 && biot.segments.some((segment) => segment.type === "predator" || segment.type === "venom")) {
-          egg.health -= 1.8;
+          const camoGuard = egg.child.segments.filter((segment) => segment.type === "camo").length;
+          egg.health -= Math.max(0.7, 1.8 - camoGuard * 0.18);
         }
       }
       if (egg.life <= 0 && egg.health > 1) {

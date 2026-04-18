@@ -151,13 +151,31 @@
               </label>
               <label>
                 Angle
-                <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
-                <span id="builder-angle-value"></span>
+                <div class="builder-adjust-row">
+                  <div class="builder-stepper" aria-label="Angle nudges">
+                    <button id="builder-angle-minus-big" type="button" class="secondary-btn inline-btn">-45°</button>
+                    <button id="builder-angle-minus" type="button" class="secondary-btn inline-btn">-15°</button>
+                    <button id="builder-angle-zero" type="button" class="secondary-btn inline-btn">0°</button>
+                    <button id="builder-angle-plus" type="button" class="secondary-btn inline-btn">+15°</button>
+                    <button id="builder-angle-plus-big" type="button" class="secondary-btn inline-btn">+45°</button>
+                  </div>
+                  <input id="builder-angle" type="range" min="-180" max="180" step="5" value="0" />
+                  <span id="builder-angle-value"></span>
+                </div>
               </label>
               <label>
                 Length
-                <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
-                <span id="builder-length-value"></span>
+                <div class="builder-adjust-row">
+                  <div class="builder-stepper" aria-label="Length nudges">
+                    <button id="builder-length-minus-big" type="button" class="secondary-btn inline-btn">-4</button>
+                    <button id="builder-length-minus" type="button" class="secondary-btn inline-btn">-1</button>
+                    <button id="builder-length-reset" type="button" class="secondary-btn inline-btn">12</button>
+                    <button id="builder-length-plus" type="button" class="secondary-btn inline-btn">+1</button>
+                    <button id="builder-length-plus-big" type="button" class="secondary-btn inline-btn">+4</button>
+                  </div>
+                  <input id="builder-length" type="range" min="6" max="24" step="1" value="12" />
+                  <span id="builder-length-value"></span>
+                </div>
               </label>
               <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
               <div class="row">
