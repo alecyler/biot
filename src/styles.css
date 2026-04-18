@@ -384,19 +384,10 @@ textarea {
 }
 
 #brand-chip {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 9;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(9, 16, 26, 0.7);
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-  pointer-events: none;
+  position: fixed;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+  z-index: 14;
 }
 
 #brand-chip img {
@@ -449,21 +440,16 @@ textarea {
 }
 
 #hint-ribbon {
-  position: absolute;
-  left: 12px;
-  top: 100px;
-  z-index: 9;
-  max-width: min(620px, calc(100vw - 190px));
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(9, 16, 26, 0.7);
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #d8e3ef;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
+  top: auto;
+  z-index: 16;
+  max-width: min(720px, calc(100vw - 24px));
+  width: max-content;
+  text-align: center;
+  pointer-events: none;
 }
 
 #hint-ribbon span {
@@ -715,18 +701,22 @@ textarea::placeholder {
     flex: 1 1 140px;
   }
 
-  #hint-ribbon {
-    top: 188px;
-    right: 12px;
-  }
+#hint-ribbon {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
+  top: auto;
+  max-width: calc(100vw - 20px);
+}
 }
 
 
 #footer-links {
   position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 20;
+  left: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 13;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -752,9 +742,51 @@ textarea::placeholder {
 
 @media (max-width: 900px) {
   #footer-links {
-    left: 12px;
-    right: 12px;
-    bottom: 8px;
-    justify-content: center;
+   position: fixed;
+  left: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 13;
+  }
+}
+
+
+#lab-panel {
+  position: fixed;
+  right: 16px;
+  top: 72px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 96px);
+  z-index: 18;
+}
+
+#lab-panel[open] .hud-card {
+  display: block;
+}
+
+#lab-panel .hud-card {
+  display: none;
+}
+
+#lab-panel .panel-resize-handle {
+  display: block;
+}
+
+
+@media (max-width: 900px) {
+  #lab-panel {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 132px);
+    width: auto !important;
+    max-height: min(42vh, 420px);
+  }
+
+  #lab-panel .panel-resize-handle {
+    display: none;
+  }
+
+  #footer-links {
+    display: none;
   }
 }

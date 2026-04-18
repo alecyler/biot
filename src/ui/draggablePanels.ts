@@ -1,5 +1,5 @@
-const STORAGE_KEY = "biots-hud-layout-v1";
-const PANEL_IDS = ["stats-panel", "inspector-panel", "builder-panel", "control-drawer"] as const;
+const STORAGE_KEY = "biots-hud-layout-v2";
+const PANEL_IDS = ["lab-panel"] as const;
 
 type PanelId = (typeof PANEL_IDS)[number];
 

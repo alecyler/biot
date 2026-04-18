@@ -22,6 +22,13 @@ const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
 const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
 const chaosEventBtnNode = document.getElementById("chaosEventBtn");
+const helpDrawerNode = document.getElementById("help-drawer");
+const helpDrawerCloseNode = document.getElementById("helpDrawerClose");
+const labPanelNode = document.getElementById("lab-panel");
+const labTabInspectorNode = document.getElementById("lab-tab-inspector");
+const labTabBuilderNode = document.getElementById("lab-tab-builder");
+const labPaneInspectorNode = document.getElementById("lab-pane-inspector");
+const labPaneBuilderNode = document.getElementById("lab-pane-builder");
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
@@ -38,7 +45,14 @@ if (
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
   !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
-  !(chaosEventBtnNode instanceof HTMLButtonElement)
+  !(chaosEventBtnNode instanceof HTMLButtonElement) ||
+  !(helpDrawerNode instanceof HTMLElement) ||
+  !(helpDrawerCloseNode instanceof HTMLButtonElement) ||
+  !(labPanelNode instanceof HTMLDetailsElement) ||
+  !(labTabInspectorNode instanceof HTMLButtonElement) ||
+  !(labTabBuilderNode instanceof HTMLButtonElement) ||
+  !(labPaneInspectorNode instanceof HTMLElement) ||
+  !(labPaneBuilderNode instanceof HTMLElement)
 ) {
   throw new Error("Missing required DOM nodes for current UI.");
 }
@@ -58,8 +72,13 @@ const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
-const builderPanel = document.getElementById("builder-panel");
-const inspectorPanel = document.getElementById("inspector-panel");
+const helpDrawer = helpDrawerNode;
+const helpDrawerClose = helpDrawerCloseNode;
+const labPanel = labPanelNode;
+const labTabInspector = labTabInspectorNode;
+const labTabBuilder = labTabBuilderNode;
+const labPaneInspector = labPaneInspectorNode;
+const labPaneBuilder = labPaneBuilderNode;
 
 
 const config: WorldConfig = {
@@ -121,6 +140,29 @@ function refreshHintText(): void {
   splashHint.textContent = splashHints[splashIndex];
 }
 
+function showHelpDrawer(): void {
+  refreshHintText();
+  helpDrawer.hidden = false;
+}
+
+function hideHelpDrawer(): void {
+  helpDrawer.hidden = true;
+}
+
+function setLabTab(tab: "inspector" | "builder", syncBuilderSelection = true): void {
+  const inspectorActive = tab === "inspector";
+  labPanel.dataset.labTab = tab;
+  labPaneInspector.hidden = !inspectorActive;
+  labPaneBuilder.hidden = inspectorActive;
+  labPaneInspector.classList.toggle("is-active", inspectorActive);
+  labPaneBuilder.classList.toggle("is-active", !inspectorActive);
+  labTabInspector.classList.toggle("is-active", inspectorActive);
+  labTabBuilder.classList.toggle("is-active", !inspectorActive);
+  labTabInspector.setAttribute("aria-selected", inspectorActive ? "true" : "false");
+  labTabBuilder.setAttribute("aria-selected", inspectorActive ? "false" : "true");
+  if (!inspectorActive && syncBuilderSelection) loadSelectedBiotIntoBuilderFromInspector();
+}
+
 function rotateRibbonHint(): void {
   let index = 0;
   hintRibbonText.textContent = ribbonHints[index];
@@ -150,19 +192,6 @@ function loadSelectedBiotIntoBuilderFromInspector(): void {
   loadBiotIntoBuilder(selected.segments, selected.lineageId || `Captured ${selected.id}`);
 }
 
-if (builderPanel instanceof HTMLDetailsElement) {
-  builderPanel.addEventListener("toggle", () => {
-    if (builderPanel.open) loadSelectedBiotIntoBuilderFromInspector();
-  });
-}
-
-if (builderPanel instanceof HTMLDetailsElement && inspectorPanel instanceof HTMLDetailsElement) {
-  builderPanel.querySelector(":scope > summary")?.addEventListener("click", () => {
-    if (!builderPanel.open && selectedBiotId) {
-      window.setTimeout(() => loadSelectedBiotIntoBuilderFromInspector(), 0);
-    }
-  });
-}
 
 resize();
 initializeDraggablePanels();
@@ -170,6 +199,7 @@ window.addEventListener("resize", resize);
 
 refreshHintText();
 rotateRibbonHint();
+setLabTab("inspector", false);
 initializeAdSenseBanner();
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
@@ -178,8 +208,12 @@ spawnFromSavedPool("hunter");
 showSplash();
 
 helpBtn.addEventListener("click", () => {
-  refreshHintText();
-  showSplash();
+  if (helpDrawer.hidden) showHelpDrawer();
+  else hideHelpDrawer();
+});
+
+helpDrawerClose.addEventListener("click", () => {
+  hideHelpDrawer();
 });
 
 quickSpawnFlowerBtn.addEventListener("click", () => {
@@ -188,6 +222,20 @@ quickSpawnFlowerBtn.addEventListener("click", () => {
 
 quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
+});
+
+labTabInspector.addEventListener("click", () => {
+  labPanel.open = true;
+  setLabTab("inspector", false);
+});
+
+labTabBuilder.addEventListener("click", () => {
+  labPanel.open = true;
+  setLabTab("builder");
+});
+
+labPanel.addEventListener("toggle", () => {
+  if (labPanel.open && labPanel.dataset.labTab === "builder") setLabTab("builder");
 });
 
 chaosEventBtn.addEventListener("click", () => {
@@ -205,10 +253,8 @@ splashStartBtn.addEventListener("click", () => {
 splashBuilderBtn.addEventListener("click", () => {
   paused = false;
   hideSplash();
-  const builderPanel = document.getElementById("builder-panel");
-  if (builderPanel instanceof HTMLDetailsElement) {
-    builderPanel.open = true;
-  }
+  labPanel.open = true;
+  setLabTab("builder");
 });
 
 splashCloseBtn.addEventListener("click", () => {
@@ -223,6 +269,8 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   const capturedName = selected.lineageId || `Captured ${selected.id}`;
   saveFavoriteBlueprint(capturedName, selected.segments);
   loadBiotIntoBuilder(selected.segments, capturedName);
+  labPanel.open = true;
+  setLabTab("builder", false);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   saveSelectedBiotBtn.textContent = "Species saved to builder";
 
@@ -246,6 +294,7 @@ canvas.addEventListener("click", (event) => {
 
   const biot = world.findBiotAt(x, y);
   selectedBiotId = biot?.id ?? null;
+  if (biot) loadBiotIntoBuilder(biot.segments, biot.lineageId || `Captured ${biot.id}`);
 });
 
 let lastStep = performance.now();
