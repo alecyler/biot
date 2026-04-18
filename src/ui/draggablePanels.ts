@@ -1,5 +1,5 @@
 const STORAGE_KEY = "biots-hud-layout-v1";
-const PANEL_IDS = ["lab-panel"] as const;
+const PANEL_IDS = ["stats-panel", "inspector-panel", "builder-panel", "control-drawer"] as const;
 
 type PanelId = (typeof PANEL_IDS)[number];
 
@@ -15,20 +15,6 @@ type LayoutMap = Partial<Record<PanelId, PanelLayout>>;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
-}
-
-function isDesktopHudLayout(): boolean {
-  return window.innerWidth > 900 && !window.matchMedia("(pointer: coarse)").matches;
-}
-
-function clearPanelPosition(panel: HTMLDetailsElement): void {
-  panel.style.left = "";
-  panel.style.top = "";
-  panel.style.right = "";
-  panel.style.bottom = "";
-  panel.style.width = "";
-  panel.style.height = "";
-  panel.style.zIndex = "";
 }
 
 function readLayout(): LayoutMap {
@@ -62,14 +48,23 @@ function getSummary(panel: HTMLDetailsElement): HTMLElement {
   return summary;
 }
 
+function getTopSafeOffset(): number {
+  const statsBar = document.getElementById("top-stats");
+  const actionStrip = document.getElementById("action-strip");
+  const statsBottom = statsBar instanceof HTMLElement ? statsBar.getBoundingClientRect().bottom : 0;
+  const actionBottom = actionStrip instanceof HTMLElement ? actionStrip.getBoundingClientRect().bottom : 0;
+  return Math.max(8, Math.max(statsBottom, actionBottom) + 8);
+}
+
 function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number, width: number, height?: number): void {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const rect = panel.getBoundingClientRect();
+  const minTop = getTopSafeOffset();
   const clampedWidth = clamp(width, 220, Math.max(220, viewportWidth - 12));
-  const clampedHeight = clamp(height ?? rect.height, 180, Math.max(180, viewportHeight - 16));
+  const clampedHeight = clamp(height ?? rect.height, 180, Math.max(180, viewportHeight - minTop - 8));
   const clampedLeft = clamp(left, 8, Math.max(8, viewportWidth - clampedWidth - 8));
-  const clampedTop = clamp(top, 8, Math.max(8, viewportHeight - 56));
+  const clampedTop = clamp(top, minTop, Math.max(minTop, viewportHeight - 56));
 
   panel.style.left = `${clampedLeft}px`;
   panel.style.top = `${clampedTop}px`;
@@ -80,7 +75,6 @@ function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number
 }
 
 function persistPanel(panel: HTMLDetailsElement): void {
-  if (!isDesktopHudLayout()) return;
   const layout = readLayout();
   const currentRect = panel.getBoundingClientRect();
   layout[panel.id as PanelId] = {
@@ -113,12 +107,8 @@ export function initializeDraggablePanels(): void {
     const zIndex = saved?.zIndex ?? maxZ;
     maxZ = Math.max(maxZ, zIndex + 1);
 
-    if (isDesktopHudLayout()) {
-      applyPanelPosition(panel, left, top, width, height);
-      panel.style.zIndex = String(zIndex);
-    } else {
-      clearPanelPosition(panel);
-    }
+    applyPanelPosition(panel, left, top, width, height);
+    panel.style.zIndex = String(zIndex);
 
     let pointerId: number | null = null;
     let originX = 0;
@@ -128,7 +118,7 @@ export function initializeDraggablePanels(): void {
     let moved = false;
 
     summary.addEventListener("pointerdown", (event) => {
-      if (!isDesktopHudLayout() || event.button !== 0) return;
+      if (event.button !== 0) return;
       pointerId = event.pointerId;
       originX = event.clientX;
       originY = event.clientY;
@@ -142,7 +132,7 @@ export function initializeDraggablePanels(): void {
     });
 
     summary.addEventListener("pointermove", (event) => {
-      if (!isDesktopHudLayout() || pointerId !== event.pointerId) return;
+      if (pointerId !== event.pointerId) return;
       const dx = event.clientX - originX;
       const dy = event.clientY - originY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
@@ -174,6 +164,54 @@ export function initializeDraggablePanels(): void {
       }
     });
 
+    const resizeHandle = document.createElement("button");
+    resizeHandle.type = "button";
+    resizeHandle.className = "panel-resize-handle";
+    resizeHandle.setAttribute("aria-label", `Resize ${panel.id}`);
+    panel.append(resizeHandle);
+
+    let resizePointerId: number | null = null;
+    let resizeOriginX = 0;
+    let resizeOriginY = 0;
+    let resizeStartWidth = 0;
+    let resizeStartHeight = 0;
+
+    resizeHandle.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      resizePointerId = event.pointerId;
+      resizeOriginX = event.clientX;
+      resizeOriginY = event.clientY;
+      const currentRect = panel.getBoundingClientRect();
+      resizeStartWidth = currentRect.width;
+      resizeStartHeight = currentRect.height;
+      panel.style.zIndex = String(++maxZ);
+      resizeHandle.setPointerCapture(event.pointerId);
+      panel.classList.add("panel-resizing");
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    resizeHandle.addEventListener("pointermove", (event) => {
+      if (resizePointerId !== event.pointerId) return;
+      const dx = event.clientX - resizeOriginX;
+      const dy = event.clientY - resizeOriginY;
+      const currentRect = panel.getBoundingClientRect();
+      applyPanelPosition(panel, currentRect.left, currentRect.top, resizeStartWidth + dx, resizeStartHeight + dy);
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    const finishResize = (event: PointerEvent): void => {
+      if (resizePointerId !== event.pointerId) return;
+      if (resizeHandle.hasPointerCapture(event.pointerId)) resizeHandle.releasePointerCapture(event.pointerId);
+      resizePointerId = null;
+      panel.classList.remove("panel-resizing");
+      persistPanel(panel);
+    };
+
+    resizeHandle.addEventListener("pointerup", finishResize);
+    resizeHandle.addEventListener("pointercancel", finishResize);
+
     const observer = new ResizeObserver(() => persistPanel(panel));
     observer.observe(panel);
   }
@@ -181,14 +219,8 @@ export function initializeDraggablePanels(): void {
   window.addEventListener("resize", () => {
     const layout = readLayout();
     for (const panel of panels) {
-      if (!isDesktopHudLayout()) {
-        clearPanelPosition(panel);
-        continue;
-      }
-
       const rect = panel.getBoundingClientRect();
-      const saved = layout[panel.id as PanelId];
-      applyPanelPosition(panel, saved?.left ?? rect.left, saved?.top ?? rect.top, saved?.width ?? rect.width, saved?.height ?? rect.height);
+      applyPanelPosition(panel, rect.left, rect.top, rect.width, rect.height);
       const currentRect = panel.getBoundingClientRect();
       layout[panel.id as PanelId] = {
         left: currentRect.left,
