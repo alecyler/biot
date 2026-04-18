@@ -68,7 +68,7 @@
         </div>
 
         <div id="action-strip" aria-label="quick actions">
-          <button id="quickSpawnFlowerBtn" type="button" class="secondary-btn inline-btn">🌼 Spawn flower</button>
+          <button id="quickSpawnFlowerBtn" type="button" class="secondary-btn inline-btn">🌼 Spawn flowers</button>
           <button id="quickSpawnHunterBtn" type="button" class="secondary-btn inline-btn">🦷 Spawn hunter</button>
           <button id="chaosEventBtn" type="button">🌩️ Chaos Event</button>
           <button id="resetWorldBtn" type="button" class="secondary-btn inline-btn">↺ Reset world</button>
@@ -82,6 +82,49 @@
         <div id="ad-banner-shell" hidden aria-label="Advertisement"></div>
 
         <canvas id="world"></canvas>
+
+        <aside id="help-drawer" hidden aria-label="Field guide help">
+          <div class="help-drawer-card">
+            <div class="help-drawer-header">
+              <div>
+                <strong>Field Guide</strong>
+                <span>Tips, legend, and build nudges</span>
+              </div>
+              <button id="helpDrawerClose" type="button" class="secondary-btn inline-btn" aria-label="Close field guide">×</button>
+            </div>
+            <p class="help-drawer-lead">Start with flowers, let food accumulate, then introduce hunters. Use the builder to save stable species and reseed them later.</p>
+            <p id="help-drawer-tip" class="help-drawer-tip"></p>
+            <details class="help-drawer-section" open>
+              <summary>Quick legend</summary>
+              <ul class="help-legend-list">
+                <li><span class="swatch yellow"></span> Bright zones feed plant-heavy biots.</li>
+                <li><span class="swatch blue"></span> Blue gravity pulls; red gravity pushes.</li>
+                <li><span class="swatch orange"></span> Fire zones hurt and heat the tank.</li>
+                <li><span class="swatch green"></span> Green pellets are carrion or spores.</li>
+                <li><span class="swatch gray"></span> Pale rings usually mark young or selected biots.</li>
+              </ul>
+            </details>
+            <details class="help-drawer-section">
+              <summary>Build suggestions</summary>
+              <ul class="help-legend-list">
+                <li>Flower core: photo + reproduction + structure.</li>
+                <li>Mobile grazer: photo + glide or propulsion + reproduction.</li>
+                <li>Smart hunter: predator + propulsion + perception + brain.</li>
+                <li>Late-game weapons like launcher, flame, frost, and lightning work best after a food web exists.</li>
+                <li>Glow boosts light harvesting in dim spots, but it also increases visibility. Camo does the opposite.</li>
+              </ul>
+            </details>
+            <details class="help-drawer-section">
+              <summary>Hidden-ish unlock notes</summary>
+              <ul class="help-legend-list">
+                <li>Eyes and brains are most useful when paired with movement. A stationary thinker just burns energy.</li>
+                <li>Some advanced segments only become active after maturity, so juveniles may look simpler than the adults they become.</li>
+                <li>Saved favorites can come back later through cuckoo eggs, so stable species are worth preserving.</li>
+                <li>Portrait is best for active play. Landscape is better when you mostly want to watch the tank.</li>
+              </ul>
+            </details>
+          </div>
+        </aside>
 
         <details id="lab-panel" class="hud-panel" open data-lab-tab="inspector">
           <summary>Biot Lab</summary>

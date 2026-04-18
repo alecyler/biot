@@ -22,6 +22,9 @@ const labPanelNode = document.getElementById("lab-panel");
 const labTabInspectorNode = document.getElementById("lab-tab-inspector");
 const labTabBuilderNode = document.getElementById("lab-tab-builder");
 const helpBtnNode = document.getElementById("helpBtn");
+const helpDrawerNode = document.getElementById("help-drawer");
+const helpDrawerCloseNode = document.getElementById("helpDrawerClose");
+const helpDrawerTipNode = document.getElementById("help-drawer-tip");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
 const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
@@ -43,6 +46,9 @@ if (
   !(labTabInspectorNode instanceof HTMLButtonElement) ||
   !(labTabBuilderNode instanceof HTMLButtonElement) ||
   !(helpBtnNode instanceof HTMLButtonElement) ||
+  !(helpDrawerNode instanceof HTMLElement) ||
+  !(helpDrawerCloseNode instanceof HTMLButtonElement) ||
+  !(helpDrawerTipNode instanceof HTMLElement) ||
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
   !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
@@ -65,6 +71,9 @@ const labPanel = labPanelNode;
 const labTabInspector = labTabInspectorNode;
 const labTabBuilder = labTabBuilderNode;
 const helpBtn = helpBtnNode;
+const helpDrawer = helpDrawerNode;
+const helpDrawerClose = helpDrawerCloseNode;
+const helpDrawerTip = helpDrawerTipNode;
 const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
@@ -134,11 +143,20 @@ const ribbonHints = [
 ];
 
 function showSplash(): void {
+  hideHelpDrawer();
   splashOverlay.hidden = false;
 }
 
 function hideSplash(): void {
   splashOverlay.hidden = true;
+}
+
+function hideHelpDrawer(): void {
+  helpDrawer.hidden = true;
+}
+
+function toggleHelpDrawer(): void {
+  helpDrawer.hidden = !helpDrawer.hidden;
 }
 
 function setLabTab(tab: "inspector" | "builder", openPanel = false): void {
@@ -249,6 +267,7 @@ function initializeMobilePanels(): void {
 function refreshHintText(): void {
   const splashIndex = Math.floor(Math.random() * splashHints.length);
   splashHint.textContent = splashHints[splashIndex];
+  helpDrawerTip.textContent = splashHints[(splashIndex + 3) % splashHints.length];
 }
 
 function getOrientationHint(): string | null {
@@ -261,24 +280,29 @@ function getOrientationHint(): string | null {
 function rotateRibbonHint(): void {
   let index = 0;
   hintRibbonText.textContent = getOrientationHint() ?? ribbonHints[index];
+  helpDrawerTip.textContent = splashHints[0];
   window.setInterval(() => {
     index = (index + 1) % ribbonHints.length;
     hintRibbonText.textContent = getOrientationHint() ?? ribbonHints[index];
+    helpDrawerTip.textContent = splashHints[index % splashHints.length];
   }, 5000);
 }
 
-function spawnFromSavedPool(category: "flower" | "hunter"): void {
+function spawnFromSavedPool(category: "flower" | "hunter", count = 1): void {
   const pool = getSavedBlueprintsByCategory(category);
-  if (pool.length > 0) {
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    world.spawnDesignedBiot(pick.segments, true, pick.name);
-  } else if (category === "flower") {
-    world.spawnStarterFlower();
-  } else {
-    world.spawnStarterHunter();
+  for (let i = 0; i < count; i += 1) {
+    if (pool.length > 0) {
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      world.spawnDesignedBiot(pick.segments, true, pick.name);
+    } else if (category === "flower") {
+      world.spawnStarterFlower();
+    } else {
+      world.spawnStarterHunter();
+    }
   }
   paused = false;
   lastRenderedVersion = -1;
+  saveWorldSnapshot();
 }
 
 syncResponsiveUi();
@@ -301,6 +325,7 @@ if (!restoredWorld) {
   spawnFromSavedPool("flower");
   spawnFromSavedPool("hunter");
 }
+hideHelpDrawer();
 showSplash();
 
 if (hadPendingResetNavigation) {
@@ -313,15 +338,21 @@ if (hadPendingResetNavigation) {
 
 helpBtn.addEventListener("click", () => {
   refreshHintText();
-  showSplash();
+  toggleHelpDrawer();
+});
+
+helpDrawerClose.addEventListener("click", () => {
+  hideHelpDrawer();
 });
 
 quickSpawnFlowerBtn.addEventListener("click", () => {
-  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower", 10);
+  hintRibbonText.textContent = "Dropped in a bouquet of 10 flowers to help rebalance the tank.";
 });
 
 quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
+  hintRibbonText.textContent = "Dropped in one hunter from your saved hunter pool.";
 });
 
 chaosEventBtn.addEventListener("click", () => {

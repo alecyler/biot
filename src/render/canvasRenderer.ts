@@ -53,7 +53,6 @@ export class CanvasRenderer {
 
     this.drawProjectiles(env.projectiles);
     this.drawHud(world, env.light, env.temperature, env.gravityZones.length, env.lightZones.length, env.fireZones.length, env.disasters.length, env.carrion.length, env.eggPods.length);
-    this.drawLegend(height);
   }
 
   private drawBackground(width: number, height: number, light: number, temperature: number): void {
@@ -540,46 +539,6 @@ export class CanvasRenderer {
     this.ctx.fillRect(10, 10, width, 24);
     this.ctx.fillStyle = "rgba(255,255,255,0.92)";
     this.ctx.fillText(text, 18, 16);
-    this.ctx.restore();
-  }
-
-  private drawLegend(height: number): void {
-    if (window.matchMedia("(max-width: 900px)").matches) return;
-    const items = [
-      { color: "rgba(255, 220, 110, 0.95)", label: "Light zone — plant-rich bright pocket" },
-      { color: "rgba(120, 190, 255, 0.95)", label: "Blue gravity — pull / weight well" },
-      { color: "rgba(255, 140, 140, 0.95)", label: "Red gravity — push / repulse zone" },
-      { color: "rgba(255, 150, 60, 0.95)", label: "Fire zone — heat and damage" },
-      { color: "rgba(225, 238, 255, 0.95)", label: "Storm core — rare shredding disaster" },
-      { color: "rgba(155, 255, 120, 0.95)", label: "Green pellet — carrion / spores" },
-      { color: "rgba(255, 244, 210, 0.95)", label: "Ivory pod — egg or seed stage" },
-      { color: "rgba(170, 220, 255, 0.95)", label: "Pale ring — juvenile / immature biot" },
-      { color: "rgba(120, 255, 110, 0.95)", label: "Green halo — poison drain" },
-      { color: "rgba(255, 80, 170, 0.95)", label: "Pink halo — venom wound" },
-      { color: "rgba(210, 245, 120, 0.95)", label: "Sick halo — disease outbreak" },
-    ];
-
-    const padding = 12;
-    const rowHeight = 18;
-    const boxWidth = 274;
-    const boxHeight = 10 + items.length * rowHeight + 8;
-    const x = 10;
-    const y = height - boxHeight - 10;
-
-    this.ctx.save();
-    this.ctx.fillStyle = "rgba(6, 10, 18, 0.58)";
-    this.ctx.fillRect(x, y, boxWidth, boxHeight);
-    this.ctx.font = "12px system-ui, sans-serif";
-    this.ctx.textBaseline = "middle";
-
-    items.forEach((item, index) => {
-      const rowY = y + padding + index * rowHeight + 4;
-      this.ctx.fillStyle = item.color;
-      this.ctx.fillRect(x + 10, rowY - 4, 10, 10);
-      this.ctx.fillStyle = "rgba(255,255,255,0.9)";
-      this.ctx.fillText(item.label, x + 28, rowY + 1);
-    });
-
     this.ctx.restore();
   }
 
