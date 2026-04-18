@@ -4,10 +4,23 @@ export interface AdSenseBannerConfig {
   slot: string;
 }
 
-// Fill these in after your AdSense account is approved and you create an ad unit.
-// Until then, leave enabled false so the game ships cleanly with no blank ad box.
+export interface AdSenseAutoAdsConfig {
+  enabled: boolean;
+  client: string;
+}
+
+// Website ads are best handled with AdSense.
+// - Banner is the manual bottom slot used in-game.
+// - Auto ads are optional and can provide anchor/vignette behavior on page navigations
+//   such as a full world reset. Final vignette frequency and triggers are controlled in
+//   your AdSense dashboard.
 export const ADSENSE_BANNER_CONFIG: AdSenseBannerConfig = {
   enabled: false,
   client: "ca-pub-XXXXXXXXXXXXXXXX",
   slot: "0000000000",
+};
+
+export const ADSENSE_AUTO_ADS_CONFIG: AdSenseAutoAdsConfig = {
+  enabled: false,
+  client: "ca-pub-XXXXXXXXXXXXXXXX",
 };

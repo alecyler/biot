@@ -28,7 +28,7 @@ body {
 #world {
   display: block;
   width: 100%;
-  height: 100vh;
+  height: 100svh;
   cursor: crosshair;
 }
 
@@ -722,5 +722,183 @@ textarea::placeholder {
     right: 12px;
     bottom: 8px;
     justify-content: center;
+  }
+}
+
+
+body.mobile-ui #brand-chip {
+  display: none;
+}
+
+body.mobile-ui #helpBtn {
+  right: 10px;
+  top: 10px;
+  width: 38px;
+  height: 38px;
+}
+
+body.mobile-ui .top-stats-bar {
+  left: 8px;
+  right: 56px;
+  top: 8px;
+  padding: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+body.mobile-ui .top-stats-bar::-webkit-scrollbar {
+  display: none;
+}
+
+body.mobile-ui #stats {
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+body.mobile-ui .stat-pill {
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+body.mobile-ui #action-strip {
+  left: 8px;
+  right: 8px;
+  top: 58px;
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.mobile-ui #action-strip button {
+  width: 100%;
+  min-height: 42px;
+  font-size: 13px;
+}
+
+body.mobile-ui #hint-ribbon {
+  left: 8px;
+  right: 8px;
+  top: 154px;
+  max-width: none;
+  border-radius: 16px;
+  align-items: flex-start;
+  padding: 10px 12px;
+}
+
+body.mobile-ui #hint-ribbon span {
+  margin-top: 2px;
+}
+
+body.mobile-ui .hud-panel {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  width: auto;
+  pointer-events: auto;
+  min-height: 0;
+}
+
+body.mobile-ui .draggable-panel {
+  resize: none;
+  touch-action: auto;
+  overflow: visible;
+  min-width: 0;
+  min-height: 0;
+}
+
+body.mobile-ui .drag-summary::before {
+  display: none;
+}
+
+body.mobile-ui .hud-panel > summary {
+  cursor: pointer;
+  margin-bottom: 6px;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+body.mobile-ui #inspector-panel {
+  top: auto;
+  bottom: 122px;
+}
+
+body.mobile-ui #builder-panel {
+  top: auto;
+  bottom: 62px;
+}
+
+body.mobile-ui #inspector-panel .hud-card,
+body.mobile-ui #builder-panel .hud-card {
+  height: auto;
+  max-height: min(42svh, 360px);
+  overflow: auto;
+}
+
+body.mobile-ui #builder-preview {
+  max-height: 180px;
+  object-fit: contain;
+}
+
+body.mobile-ui #footer-links {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  justify-content: center;
+}
+
+body.mobile-ui #ad-banner-shell {
+  bottom: 44px;
+  width: min(320px, calc(100vw - 16px));
+}
+
+body.mobile-ui .row button {
+  flex: 1 1 calc(50% - 6px);
+}
+
+.danger-btn {
+  background: rgba(255, 96, 96, 0.18);
+  border: 1px solid rgba(255, 120, 120, 0.3);
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+@media (max-width: 560px), (pointer: coarse) {
+  .splash-card {
+    width: calc(100vw - 16px);
+    max-height: min(92svh, 920px);
+    padding: 20px 16px 16px;
+    border-radius: 20px;
+  }
+
+  body.mobile-ui #action-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.mobile-ui #action-strip button {
+    font-size: 12px;
+    padding-inline: 8px;
+  }
+
+  body.mobile-ui #hint-ribbon {
+    top: 152px;
+    font-size: 12px;
+  }
+
+  body.mobile-ui #inspector-panel {
+    bottom: 118px;
+  }
+
+  body.mobile-ui #builder-panel {
+    bottom: 58px;
   }
 }
