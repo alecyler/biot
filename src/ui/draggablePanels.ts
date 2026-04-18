@@ -1,6 +1,5 @@
-const STORAGE_KEY = "biots-hud-layout-v4";
-const MOBILE_BREAKPOINT = 900;
-const PANEL_IDS = ["lab-panel"] as const;
+const STORAGE_KEY = "biots-hud-layout-v1";
+const PANEL_IDS = ["stats-panel", "inspector-panel", "builder-panel", "control-drawer"] as const;
 
 type PanelId = (typeof PANEL_IDS)[number];
 
@@ -57,27 +56,12 @@ function getTopSafeOffset(): number {
   return Math.max(8, Math.max(statsBottom, actionBottom) + 8);
 }
 
-
-function isMobileLayout(): boolean {
-  return window.innerWidth <= MOBILE_BREAKPOINT;
-}
-
-function applyMobileDockedPanel(panel: HTMLDetailsElement): void {
-  panel.style.left = "10px";
-  panel.style.right = "10px";
-  panel.style.top = "auto";
-  panel.style.bottom = "calc(env(safe-area-inset-bottom, 0px) + 116px)";
-  panel.style.width = "auto";
-  panel.style.height = "min(64vh, 680px)";
-  panel.style.maxHeight = "min(64vh, 680px)";
-}
-
 function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number, width: number, height?: number): void {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const rect = panel.getBoundingClientRect();
   const minTop = getTopSafeOffset();
-  const clampedWidth = clamp(width, 320, Math.max(320, viewportWidth - 12));
+  const clampedWidth = clamp(width, 220, Math.max(220, viewportWidth - 12));
   const clampedHeight = clamp(height ?? rect.height, 180, Math.max(180, viewportHeight - minTop - 8));
   const clampedLeft = clamp(left, 8, Math.max(8, viewportWidth - clampedWidth - 8));
   const clampedTop = clamp(top, minTop, Math.max(minTop, viewportHeight - 56));
@@ -105,7 +89,6 @@ function persistPanel(panel: HTMLDetailsElement): void {
 
 export function initializeDraggablePanels(): void {
   const panels = getPanels();
-  const mobileLayout = isMobileLayout();
   const savedLayout = readLayout();
   let maxZ = 20;
 
@@ -124,13 +107,8 @@ export function initializeDraggablePanels(): void {
     const zIndex = saved?.zIndex ?? maxZ;
     maxZ = Math.max(maxZ, zIndex + 1);
 
-    if (mobileLayout) {
-      applyMobileDockedPanel(panel);
-      panel.style.zIndex = String(zIndex);
-    } else {
-      applyPanelPosition(panel, left, top, width, height);
-      panel.style.zIndex = String(zIndex);
-    }
+    applyPanelPosition(panel, left, top, width, height);
+    panel.style.zIndex = String(zIndex);
 
     let pointerId: number | null = null;
     let originX = 0;
@@ -140,7 +118,6 @@ export function initializeDraggablePanels(): void {
     let moved = false;
 
     summary.addEventListener("pointerdown", (event) => {
-      if (isMobileLayout()) return;
       if (event.button !== 0) return;
       pointerId = event.pointerId;
       originX = event.clientX;
@@ -200,7 +177,6 @@ export function initializeDraggablePanels(): void {
     let resizeStartHeight = 0;
 
     resizeHandle.addEventListener("pointerdown", (event) => {
-      if (isMobileLayout()) return;
       if (event.button !== 0) return;
       resizePointerId = event.pointerId;
       resizeOriginX = event.clientX;
@@ -242,13 +218,7 @@ export function initializeDraggablePanels(): void {
 
   window.addEventListener("resize", () => {
     const layout = readLayout();
-    const mobile = isMobileLayout();
     for (const panel of panels) {
-      if (mobile) {
-        applyMobileDockedPanel(panel);
-        continue;
-      }
-      panel.style.maxHeight = "";
       const rect = panel.getBoundingClientRect();
       applyPanelPosition(panel, rect.left, rect.top, rect.width, rect.height);
       const currentRect = panel.getBoundingClientRect();

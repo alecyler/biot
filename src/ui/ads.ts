@@ -71,22 +71,19 @@ function initializeBanner(): void {
   if (script?.dataset.loaded === "1") {
     pushBanner();
   } else if (script) {
-    script.addEventListener(
-      "load",
-      () => {
-        script.dataset.loaded = "1";
-        pushBanner();
-      },
-      { once: true }
-    );
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "1";
+      pushBanner();
+    }, { once: true });
   }
 }
 
-export function initializeAdSenseBanner(): void {
+export function initializeAds(): void {
   initializeAutoAds();
   initializeBanner();
 }
 
-export function initializeAds(): void {
-  initializeAdSenseBanner();
+
+export function initializeAdSenseBanner(): void {
+  initializeAds();
 }

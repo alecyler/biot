@@ -161,11 +161,11 @@ const DISASTER_PULL = 0.22;
 const DISASTER_DAMAGE = 1.8;
 const DISASTER_SEGMENT_STRIP_CHANCE = 0.08;
 
-const MAX_PROJECTILES = 220;
-const MAX_CARRION = 360;
-const MAX_EGG_PODS = 120;
+const MAX_PROJECTILES = 280;
+const MAX_CARRION = 520;
+const MAX_EGG_PODS = 180;
 const BIOT_QUERY_CELL_SIZE = 96;
-const MAX_LIGHTNING_ARCS = 80;
+const MAX_LIGHTNING_ARCS = 120;
 
 interface CollisionInfo {
   nx: number;
@@ -1866,8 +1866,8 @@ export class World {
       for (const [a, b] of broadPhase.candidatePairs) {
         if (a.dead || b.dead) continue;
 
-        const aSegments = broadPhase.renderedById.get(a.id) ?? buildRenderedSegments(a);
-        const bSegments = broadPhase.renderedById.get(b.id) ?? buildRenderedSegments(b);
+        const aSegments = buildRenderedSegments(a);
+        const bSegments = buildRenderedSegments(b);
 
         let bestCollision: CollisionInfo | null = null;
 
