@@ -40,8 +40,7 @@ if (
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
   !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
-  !(chaosEventBtnNode instanceof HTMLButtonElement) ||
-  !(resetWorldBtnNode instanceof HTMLButtonElement)
+  !(chaosEventBtnNode instanceof HTMLButtonElement)
 ) {
   throw new Error("Missing required DOM nodes for current UI.");
 }
@@ -61,7 +60,7 @@ const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
-const resetWorldBtn = resetWorldBtnNode;
+const resetWorldBtn = resetWorldBtnNode instanceof HTMLButtonElement ? resetWorldBtnNode : null;
 
 const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
 const WORLD_SNAPSHOT_KEY = "biots-world-snapshot-v1";
@@ -277,14 +276,16 @@ chaosEventBtn.addEventListener("click", () => {
   saveWorldSnapshot();
 });
 
-resetWorldBtn.addEventListener("click", () => {
-  resetWorld();
-  paused = true;
-  hintRibbonText.textContent = rewardHookIsAvailable()
-    ? "Resetting world and preparing the next reward break..."
-    : "Resetting world. If AdSense Auto ads with vignette are enabled, this navigation becomes your reset interstitial test hook.";
-  window.setTimeout(() => navigateToWorldReset(), 80);
-});
+if (resetWorldBtn) {
+  resetWorldBtn.addEventListener("click", () => {
+    resetWorld();
+    paused = true;
+    hintRibbonText.textContent = rewardHookIsAvailable()
+      ? "Resetting world and preparing the next reward break..."
+      : "Resetting world. If AdSense Auto ads with vignette are enabled, this navigation becomes your reset interstitial test hook.";
+    window.setTimeout(() => navigateToWorldReset(), 80);
+  });
+}
 
 splashStartBtn.addEventListener("click", () => {
   paused = false;
