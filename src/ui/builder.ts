@@ -38,6 +38,7 @@ interface BuilderRefs {
   status: HTMLElement;
   segmentList: HTMLElement;
   typeSelect: HTMLSelectElement;
+  typeChips: HTMLElement;
   angleInput: HTMLInputElement;
   angleValue: HTMLElement;
   angleMinusBigBtn: HTMLButtonElement;
@@ -55,6 +56,8 @@ interface BuilderRefs {
   selectedParent: HTMLElement;
   spawnBtn: HTMLButtonElement;
   addChildBtn: HTMLButtonElement;
+  duplicateBtn: HTMLButtonElement;
+  mirrorBranchBtn: HTMLButtonElement;
   deleteBtn: HTMLButtonElement;
   newBtn: HTMLButtonElement;
   favoriteName: HTMLInputElement;
@@ -396,6 +399,7 @@ function getBuilderRefs(): BuilderRefs {
     status: getElement("builder-status", HTMLElement),
     segmentList: getElement("builder-segment-list", HTMLElement),
     typeSelect: getElement("builder-segment-type", HTMLSelectElement),
+    typeChips: getElement("builder-type-chips", HTMLElement),
     angleInput: getElement("builder-angle", HTMLInputElement),
     angleValue: getElement("builder-angle-value", HTMLElement),
     angleMinusBigBtn: getElement("builder-angle-minus-big", HTMLButtonElement),
@@ -413,6 +417,8 @@ function getBuilderRefs(): BuilderRefs {
     selectedParent: getElement("builder-parent-target", HTMLElement),
     spawnBtn: getElement("builder-spawn", HTMLButtonElement),
     addChildBtn: getElement("builder-add-child", HTMLButtonElement),
+    duplicateBtn: getElement("builder-duplicate", HTMLButtonElement),
+    mirrorBranchBtn: getElement("builder-mirror-branch", HTMLButtonElement),
     deleteBtn: getElement("builder-delete", HTMLButtonElement),
     newBtn: getElement("builder-reset", HTMLButtonElement),
     favoriteName: getElement("builder-favorite-name", HTMLInputElement),
@@ -565,6 +571,35 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     if (!getSegment(selectedParentId)) selectedParentId = selected.id;
 
     refs.typeSelect.value = selected.type;
+    refs.typeChips.innerHTML = "";
+    const commonTypes: SegmentType[] = [
+      "structure",
+      "photo",
+      "predator",
+      "propulsion",
+      "reproduction",
+      "armor",
+      "perception",
+      "brain",
+      "camo",
+      "glow",
+      "launcher",
+      "lightning",
+    ];
+    for (const type of commonTypes) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = `type-chip${type === selected.type ? " selected" : ""}`;
+      chip.textContent = type;
+      chip.addEventListener("click", () => {
+        const current = getSegment(selectedSegmentId);
+        if (!current) return;
+        current.type = type;
+        refreshControls();
+        renderPreview();
+      });
+      refs.typeChips.append(chip);
+    }
     refs.angleInput.value = String(Math.round((selected.angle * 180) / Math.PI));
     refs.angleValue.textContent = `${refs.angleInput.value}°`;
     refs.lengthInput.value = String(selected.length.toFixed(0));
@@ -690,6 +725,36 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     selectedSegmentId = child.id;
     selectedParentId = child.id;
     refreshControls();
+  });
+
+
+  refs.duplicateBtn.addEventListener("click", () => {
+    const selected = getSegment(selectedSegmentId);
+    if (!selected) return;
+    const nextId = `seg-${segments.length}`;
+    const clone: Segment = {
+      ...selected,
+      id: nextId,
+      parentId: selected.parentId ?? "root",
+      angle: selected.angle + Math.PI / 8,
+      phase: selected.phase + Math.PI / 6,
+    };
+    segments.push(clone);
+    selectedSegmentId = clone.id;
+    selectedParentId = clone.id;
+    refreshControls();
+  });
+
+  refs.mirrorBranchBtn.addEventListener("click", () => {
+    const selected = getSegment(selectedSegmentId);
+    if (!selected) return;
+    selected.angle = -selected.angle;
+    const children = segments.filter((segment) => segment.parentId === selected.id);
+    for (const child of children) {
+      child.angle = -child.angle;
+    }
+    refreshControls();
+    renderPreview();
   });
 
   refs.deleteBtn.addEventListener("click", () => {

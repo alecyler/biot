@@ -52,7 +52,6 @@ export class CanvasRenderer {
     }
 
     this.drawProjectiles(env.projectiles);
-    this.drawHud(world, env.light, env.temperature, env.gravityZones.length, env.lightZones.length, env.fireZones.length, env.disasters.length, env.carrion.length, env.eggPods.length);
   }
 
   private drawBackground(width: number, height: number, light: number, temperature: number): void {
@@ -503,42 +502,6 @@ export class CanvasRenderer {
     this.ctx.beginPath();
     this.ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
     this.ctx.fill();
-    this.ctx.restore();
-  }
-
-  private drawHud(
-    world: World,
-    light: number,
-    temperature: number,
-    gravityCount: number,
-    lightZoneCount: number,
-    fireCount: number,
-    disasterCount: number,
-    carrionCount: number,
-    eggCount: number,
-  ): void {
-    const matureCount = world.biots.filter((biot) => biot.age >= biot.maturityAge).length;
-    const afflictedCount = world.biots.filter((biot) => biot.poisonTimer > 0 || biot.venomTimer > 0 || biot.diseaseTimer > 0).length;
-    const text = [
-      `Light ${(light * 100).toFixed(0)}%`,
-      `Temp ${(temperature * 100).toFixed(0)}%`,
-      `Biots ${world.biots.length}`,
-      `Mature ${matureCount}`,
-      `Afflicted ${afflictedCount}`,
-      `Carrion ${carrionCount}`,
-      `Eggs ${eggCount}`,
-      `Zones G:${gravityCount} L:${lightZoneCount} F:${fireCount} D:${disasterCount}`,
-    ].join("   •   ");
-
-    this.ctx.save();
-    this.ctx.font = "12px system-ui, sans-serif";
-    this.ctx.textBaseline = "top";
-    const metrics = this.ctx.measureText(text);
-    const width = metrics.width + 16;
-    this.ctx.fillStyle = "rgba(6, 10, 18, 0.55)";
-    this.ctx.fillRect(10, 10, width, 24);
-    this.ctx.fillStyle = "rgba(255,255,255,0.92)";
-    this.ctx.fillText(text, 18, 16);
     this.ctx.restore();
   }
 

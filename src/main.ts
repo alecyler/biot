@@ -439,7 +439,11 @@ const uiRefreshMs = 200;
 const maxSimStepsPerFrame = 4;
 const maxCatchUpMs = stepMs * maxSimStepsPerFrame;
 
-function updateUi(now: number, selectedBiot: ReturnType<World["getBiotById"]>): void {
+function updateUi(
+  now: number,
+  selectedBiot: ReturnType<World["getBiotById"]>,
+  environment: ReturnType<World["getEnvironmentState"]>,
+): void {
   if (now - lastUiRefresh < uiRefreshMs && selectedBiotId === lastSelectedBiotIdForUi) return;
   lastUiRefresh = now;
   lastSelectedBiotIdForUi = selectedBiotId;
@@ -462,6 +466,8 @@ function updateUi(now: number, selectedBiot: ReturnType<World["getBiotById"]>): 
 
   renderStats(statsElement, {
     ...world.stats,
+    light: environment.light,
+    temperature: environment.temperature,
     hatchlings,
     juveniles,
     adults,
@@ -517,7 +523,7 @@ function frame(now: number): void {
     lastRenderedVersion = env.version;
   }
 
-  updateUi(now, selectedBiot);
+  updateUi(now, selectedBiot, env);
   requestAnimationFrame(frame);
 }
 

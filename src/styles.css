@@ -433,7 +433,7 @@ textarea {
 #hint-ribbon {
   position: absolute;
   left: 50%;
-  bottom: 14px;
+  bottom: 18px;
   transform: translateX(-50%);
   z-index: 8;
   max-width: min(760px, calc(100vw - 280px));
@@ -888,6 +888,7 @@ body.mobile-ui #top-stats {
   left: 8px;
   right: 54px;
   top: 8px;
+  bottom: auto;
   padding: 6px;
 }
 
@@ -1217,15 +1218,15 @@ body.mobile-ui #lab-pane-inspector .row button {
 
 body.mobile-ui.portrait-mobile #top-stats {
   left: 8px;
-  right: 8px;
-  top: auto;
-  bottom: 120px;
+  right: 54px;
+  top: 8px;
+  bottom: auto;
   padding: 6px;
   background: rgba(9, 16, 26, 0.84);
 }
 
 body.mobile-ui.portrait-mobile #stats {
-  max-height: 56px;
+  max-height: 48px;
   overflow-x: auto;
   overflow-y: hidden;
   flex-wrap: nowrap;
@@ -1247,10 +1248,12 @@ body.mobile-ui.portrait-mobile #action-strip {
 }
 
 body.mobile-ui.portrait-mobile #hint-ribbon {
-  left: 8px;
-  right: 8px;
+  left: 50%;
+  right: auto;
   top: auto;
-  bottom: 88px;
+  bottom: 92px;
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 96px));
   transform: none;
   max-width: none;
   padding: 8px 10px;
@@ -1268,7 +1271,7 @@ body.mobile-ui.portrait-mobile #ad-banner-shell {
 body.mobile-ui.portrait-mobile #lab-panel {
   left: 8px !important;
   right: 8px !important;
-  bottom: 170px;
+  bottom: 156px;
   top: auto !important;
 }
 
@@ -1290,11 +1293,15 @@ body.mobile-ui.portrait-mobile #builder-preview {
 }
 
 body.mobile-ui.landscape-mobile #top-stats {
-  right: 56px;
+  left: 8px;
+  right: 8px;
+  top: 8px;
 }
 
 body.mobile-ui.landscape-mobile #action-strip {
-  top: 58px;
+  top: 72px;
+  left: 8px;
+  right: 8px;
 }
 
 body.mobile-ui.landscape-mobile #lab-panel {
@@ -1310,7 +1317,7 @@ body.mobile-ui #lab-panel {
 
 @media (max-width: 520px) {
   body.mobile-ui.portrait-mobile #lab-panel {
-    bottom: 166px;
+    bottom: 152px;
   }
 
   body.mobile-ui.portrait-mobile #lab-panel .hud-card {
@@ -1352,4 +1359,37 @@ body.mobile-ui.landscape-mobile #hint-ribbon {
 
 body.mobile-ui #lab-panel > summary::after {
   content: "";
+}
+
+
+.type-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -2px 0 8px;
+}
+
+.type-chip {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #dce6f0;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.type-chip.selected {
+  background: rgba(90, 150, 255, 0.22);
+  border-color: rgba(120, 170, 255, 0.4);
+  color: #ffffff;
+}
+
+body.mobile-ui .type-chip-grid {
+  gap: 5px;
+}
+
+body.mobile-ui .type-chip {
+  padding: 5px 9px;
+  font-size: 11px;
 }

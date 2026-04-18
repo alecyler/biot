@@ -149,6 +149,7 @@
                 Segment type
                 <select id="builder-segment-type"></select>
               </label>
+              <div id="builder-type-chips" class="type-chip-grid" aria-label="Common segment types"></div>
               <label>
                 Angle
                 <div class="builder-adjust-row">
@@ -180,7 +181,11 @@
               <p class="muted small-note">Next child grows from: <strong id="builder-parent-target">root</strong></p>
               <div class="row">
                 <button id="builder-add-child" type="button">Add child</button>
+                <button id="builder-duplicate" type="button" class="secondary-btn inline-btn">Duplicate selected</button>
                 <button id="builder-delete" type="button" class="secondary-btn inline-btn">Delete selected</button>
+              </div>
+              <div class="row">
+                <button id="builder-mirror-branch" type="button" class="secondary-btn inline-btn">Mirror branch</button>
               </div>
               <div class="row">
                 <button id="builder-spawn" type="button">Spawn biot</button>
