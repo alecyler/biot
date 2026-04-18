@@ -242,7 +242,8 @@ window.addEventListener("resize", () => {
 
 refreshHintText();
 rotateRibbonHint();
-initializeAdSenseBanner();
+initializeAds();
+initializeMobilePanels();
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
