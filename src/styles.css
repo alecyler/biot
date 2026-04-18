@@ -697,41 +697,114 @@ textarea::placeholder {
 }
 
 @media (max-width: 900px) {
+  #helpBtn {
+    right: 10px;
+    top: 10px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .top-stats-bar {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    padding: 8px 10px;
+  }
+
+  #stats {
+    gap: 6px;
+    padding-right: 44px;
+  }
+
+  .stat-pill {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  #action-strip {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    max-width: none;
+    justify-content: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    z-index: 12;
+  }
+
+  #action-strip button {
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 8px;
+    font-size: 13px;
+    line-height: 1.15;
+  }
+
   #brand-chip {
-    right: 12px;
-    bottom: 70px;
-    max-width: calc(100vw - 24px);
+    left: 10px;
+    right: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
+    max-width: min(250px, calc(100vw - 20px));
+    z-index: 13;
   }
 
   #hint-ribbon {
-    bottom: 70px;
-    width: calc(100vw - 24px);
+    left: 10px;
+    right: 10px;
+    transform: none;
+    width: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
+    padding: 8px 10px;
+    border-radius: 16px;
+    white-space: normal;
+  }
+
+  #hint-ribbon span {
     white-space: normal;
   }
 
   #ad-banner-shell {
-    bottom: 8px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+    width: min(320px, calc(100vw - 20px));
   }
 }
 
+@media (max-width: 900px) and (orientation: landscape) {
+  .top-stats-bar {
+    right: 220px;
+  }
 
-@media (max-width: 800px) {
   #action-strip {
-    right: 12px;
+    left: auto;
+    right: 10px;
+    top: 56px;
+    bottom: auto;
+    width: 200px;
+    grid-template-columns: 1fr;
   }
 
-  #action-strip button {
-    flex: 1 1 140px;
+  #brand-chip {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    max-width: 220px;
   }
 
-#hint-ribbon {
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  bottom: 70px;
-  top: auto;
-  max-width: calc(100vw - 20px);
-}
+  #hint-ribbon {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    width: min(460px, calc(100vw - 260px));
+  }
+
+  #ad-banner-shell {
+    left: 12px;
+    transform: none;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    width: min(320px, calc(100vw - 236px));
+  }
 }
 
 
@@ -947,9 +1020,20 @@ textarea::placeholder {
     left: 10px;
     right: 10px;
     top: auto;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 132px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 116px);
     width: auto !important;
-    max-height: min(42vh, 420px);
+    height: min(64vh, 680px);
+    max-height: min(64vh, 680px);
+    min-height: 320px;
+  }
+
+  .lab-card {
+    height: calc(100% - 42px);
+    padding-bottom: 18px;
+  }
+
+  #builder-preview {
+    min-height: 220px;
   }
 
   #lab-panel .panel-resize-handle {
@@ -958,5 +1042,20 @@ textarea::placeholder {
 
   #footer-links {
     display: none;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  #lab-panel {
+    left: 10px;
+    right: 220px;
+    bottom: 10px;
+    height: auto;
+    min-height: 0;
+    max-height: calc(100vh - 20px);
+  }
+
+  .lab-card {
+    max-height: calc(100vh - 68px);
   }
 }
