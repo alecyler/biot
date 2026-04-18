@@ -551,8 +551,16 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
 
       ctx.fillStyle = selected ? "#ffffff" : "rgba(210,225,240,0.8)";
       ctx.beginPath();
-      ctx.arc(line.to.x, line.to.y, parentTarget ? 5 : 3, 0, Math.PI * 2);
+      ctx.arc(line.to.x, line.to.y, selected ? 5.5 : parentTarget ? 5 : 3, 0, Math.PI * 2);
       ctx.fill();
+
+      if (selected) {
+        ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(line.to.x, line.to.y, 11, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
 
     const root = rendered[0];
@@ -621,29 +629,97 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
       refs.segmentList.append(row);
     }
 
-    refs.status.textContent = `Segments: ${segments.length}. Click an endpoint in the preview to choose where the next segment grows.`;
+    refs.status.textContent = `Segments: ${segments.length}. Click a joint to select it, then drag the bright tip to rotate or resize.`;
     renderPreview();
   };
 
-  refs.canvas.addEventListener("click", (event) => {
-    const rect = refs.canvas.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * refs.canvas.width;
-    const y = ((event.clientY - rect.top) / rect.height) * refs.canvas.height;
-    const rendered = buildRenderedSegments(getPreviewBiot());
+  let activeDragPointerId: number | null = null;
+  let dragMoved = false;
 
+  const getCanvasPoint = (event: PointerEvent): { x: number; y: number } => {
+    const rect = refs.canvas.getBoundingClientRect();
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * refs.canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * refs.canvas.height,
+    };
+  };
+
+  const hitTestBuilderSegment = (x: number, y: number): { segmentId: string; onTip: boolean } => {
+    const rendered = buildRenderedSegments(getPreviewBiot());
     let bestSegmentId = "root";
     let bestDistance = 16;
+    let onTip = false;
     for (const line of rendered) {
       const distToTip = Math.hypot(line.to.x - x, line.to.y - y);
-      if (distToTip < bestDistance) { bestDistance = distToTip; bestSegmentId = line.segment.id; }
+      if (distToTip < bestDistance) {
+        bestDistance = distToTip;
+        bestSegmentId = line.segment.id;
+        onTip = true;
+      }
       const distToBase = Math.hypot(line.from.x - x, line.from.y - y);
-      if (distToBase < bestDistance) { bestDistance = distToBase; bestSegmentId = line.segment.id; }
+      if (distToBase < bestDistance) {
+        bestDistance = distToBase;
+        bestSegmentId = line.segment.id;
+        onTip = false;
+      }
     }
+    return { segmentId: bestSegmentId, onTip };
+  };
 
-    selectedParentId = bestSegmentId;
-    selectedSegmentId = bestSegmentId;
+  const updateSelectedFromCanvasPoint = (x: number, y: number): void => {
+    const selected = getSegment(selectedSegmentId);
+    if (!selected || selected.parentId === null) return;
+    const rendered = buildRenderedSegments(getPreviewBiot());
+    const selectedLine = rendered.find((line) => line.segment.id === selected.id);
+    if (!selectedLine) return;
+
+    const nextAngle = Math.atan2(y - selectedLine.from.y, x - selectedLine.from.x);
+    const nextLength = Math.max(6, Math.min(24, Math.round(Math.hypot(x - selectedLine.from.x, y - selectedLine.from.y))));
+    selected.angle = nextAngle;
+    selected.length = nextLength;
+    refs.angleInput.value = String(Math.round((nextAngle * 180) / Math.PI));
+    refs.angleValue.textContent = `${refs.angleInput.value}°`;
+    refs.lengthInput.value = String(nextLength);
+    refs.lengthValue.textContent = String(nextLength);
+    renderPreview();
+  };
+
+  refs.canvas.addEventListener("pointerdown", (event) => {
+    const point = getCanvasPoint(event);
+    const hit = hitTestBuilderSegment(point.x, point.y);
+    selectedParentId = hit.segmentId;
+    selectedSegmentId = hit.segmentId;
     refreshControls();
+
+    const selected = getSegment(hit.segmentId);
+    if (!hit.onTip || !selected || selected.parentId === null) return;
+
+    activeDragPointerId = event.pointerId;
+    dragMoved = false;
+    refs.canvas.setPointerCapture(event.pointerId);
+    refs.status.textContent = "Drag the bright tip to rotate and resize the selected segment.";
+    event.preventDefault();
   });
+
+  refs.canvas.addEventListener("pointermove", (event) => {
+    if (activeDragPointerId !== event.pointerId) return;
+    dragMoved = true;
+    const point = getCanvasPoint(event);
+    updateSelectedFromCanvasPoint(point.x, point.y);
+  });
+
+  const finishCanvasDrag = (event: PointerEvent): void => {
+    if (activeDragPointerId !== event.pointerId) return;
+    if (refs.canvas.hasPointerCapture(event.pointerId)) refs.canvas.releasePointerCapture(event.pointerId);
+    activeDragPointerId = null;
+    if (dragMoved) {
+      refreshControls();
+      refs.status.textContent = "Segment adjusted directly in the preview.";
+    }
+  };
+
+  refs.canvas.addEventListener("pointerup", finishCanvasDrag);
+  refs.canvas.addEventListener("pointercancel", finishCanvasDrag);
 
   refs.typeSelect.addEventListener("change", () => {
     const selected = getSegment(selectedSegmentId);
