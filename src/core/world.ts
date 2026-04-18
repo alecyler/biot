@@ -1242,6 +1242,8 @@ export class World {
       () => this.makeFlowerStarterBiot(),
       () => this.makeGliderGrazerStarterBiot(),
       () => this.makeBulwarkGrazerStarterBiot(),
+      () => this.makeSolarCanopyStarterBiot(),
+      () => this.makeBloomTowerStarterBiot(),
     ];
     const biot = pickOne(factories)();
     biot.energy = this.getEnergyCapacity(biot);
@@ -1263,6 +1265,8 @@ export class World {
       () => this.makeScavengerSkiffStarterBiot(),
       () => this.makePouncerHunterStarterBiot(),
       () => this.makeCarrionRipperStarterBiot(),
+      () => this.makeNovaHunterPrimeStarterBiot(),
+      () => this.makeWebLancerStarterBiot(),
     ];
     const biot = pickOne(factories)();
     biot.energy = this.getEnergyCapacity(biot);
@@ -3368,7 +3372,7 @@ export class World {
         { parent: 'pred-right', key: 'prop-right-aft', type: 'propulsion', angle: 2.75, length: 10 },
         { parent: 'root', key: 'repro-tail', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.24, angularVelocity: [-0.008, 0.008], maturityAge: [110, 220], lifespanFactor: [2.4, 3.4] },
+      { velocity: 0.24, angularVelocity: [-0.008, 0.008], maturityAge: [110, 220], lifespanFactor: [2.4, 3.4], lineageName: 'Wedge Hunter' },
     );
   }
 
@@ -3382,7 +3386,7 @@ export class World {
         { parent: 'root', key: 'blade-d', type: 'predator', angle: -Math.PI * 0.5, length: 18 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI * 0.25, length: 12 },
       ],
-      { velocity: 0.12, angularVelocity: [-0.05, 0.05], hueJitter: [-4, 4], maturityAge: [100, 200], lifespanFactor: [2.3, 3.2] },
+      { velocity: 0.12, angularVelocity: [-0.05, 0.05], hueJitter: [-4, 4], maturityAge: [100, 200], lifespanFactor: [2.3, 3.2], lineageName: 'Spinner' },
     );
   }
 
@@ -3399,7 +3403,7 @@ export class World {
         { parent: 'launcher-right', key: 'prop-right-tail', type: 'propulsion', angle: 2.7, length: 10 },
         { parent: 'root', key: 'repro-tail', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.22, angularVelocity: [-0.012, 0.012], maturityAge: [120, 240], lifespanFactor: [2.5, 3.6] },
+      { velocity: 0.22, angularVelocity: [-0.012, 0.012], maturityAge: [120, 240], lifespanFactor: [2.5, 3.6], lineageName: 'Launcher Skirmisher' },
     );
   }
 
@@ -3414,7 +3418,7 @@ export class World {
         { parent: 'root', key: 'repro-front', type: 'reproduction', angle: 0, length: 13 },
         { parent: 'root', key: 'repro-back', type: 'reproduction', angle: Math.PI, length: 13 },
       ],
-      { velocity: 0.14, angularVelocity: [-0.01, 0.01], maturityAge: [135, 280], lifespanFactor: [2.8, 4.3] },
+      { velocity: 0.14, angularVelocity: [-0.01, 0.01], maturityAge: [135, 280], lifespanFactor: [2.8, 4.3], lineageName: 'Glider Grazer' },
     );
   }
 
@@ -3430,7 +3434,7 @@ export class World {
         { parent: 'root', key: 'armor-right', type: 'armor', angle: Math.PI * 0.5, length: 13 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.08, angularVelocity: [-0.004, 0.004], maturityAge: [150, 320], lifespanFactor: [3.0, 4.5] },
+      { velocity: 0.08, angularVelocity: [-0.004, 0.004], maturityAge: [150, 320], lifespanFactor: [3.0, 4.5], lineageName: 'Bulwark Grazer' },
     );
   }
 
@@ -3445,7 +3449,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.35, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.26, angularVelocity: [-0.014, 0.014], maturityAge: [110, 210], lifespanFactor: [2.4, 3.4] },
+      { velocity: 0.26, angularVelocity: [-0.014, 0.014], maturityAge: [110, 210], lifespanFactor: [2.4, 3.4], lineageName: 'Lightning Pike' },
     );
   }
 
@@ -3460,7 +3464,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.2, length: 9 },
         { parent: 'fang', key: 'tail', type: 'reproduction', angle: Math.PI, length: 11 },
       ],
-      { velocity: 0.3, angularVelocity: [-0.018, 0.018], maturityAge: [105, 205], lifespanFactor: [2.2, 3.2] },
+      { velocity: 0.3, angularVelocity: [-0.018, 0.018], maturityAge: [105, 205], lifespanFactor: [2.2, 3.2], lineageName: 'Flame Skater' },
     );
   }
 
@@ -3475,7 +3479,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.55, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.22, angularVelocity: [-0.014, 0.014], maturityAge: [120, 230], lifespanFactor: [2.5, 3.5] },
+      { velocity: 0.22, angularVelocity: [-0.014, 0.014], maturityAge: [120, 230], lifespanFactor: [2.5, 3.5], lineageName: 'Frost Clamp' },
     );
   }
 
@@ -3491,7 +3495,7 @@ export class World {
         { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI, length: 12 },
         { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 0.55, length: 10 },
       ],
-      { velocity: 0.24, angularVelocity: [-0.01, 0.01], maturityAge: [110, 220], lifespanFactor: [2.6, 3.7] },
+      { velocity: 0.24, angularVelocity: [-0.01, 0.01], maturityAge: [110, 220], lifespanFactor: [2.6, 3.7], lineageName: 'Scavenger Skiff' },
     );
   }
 
@@ -3507,7 +3511,7 @@ export class World {
         { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.7, length: 8 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 11 },
       ],
-      { velocity: 0.34, angularVelocity: [-0.012, 0.012], maturityAge: [95, 180], lifespanFactor: [2.1, 3.0] },
+      { velocity: 0.34, angularVelocity: [-0.012, 0.012], maturityAge: [95, 180], lifespanFactor: [2.1, 3.0], lineageName: 'Pouncer' },
     );
   }
 
@@ -3522,7 +3526,90 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.35, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.23, angularVelocity: [-0.011, 0.011], maturityAge: [115, 220], lifespanFactor: [2.5, 3.6] },
+      { velocity: 0.23, angularVelocity: [-0.011, 0.011], maturityAge: [115, 220], lifespanFactor: [2.5, 3.6], lineageName: 'Carrion Ripper' },
+    );
+  }
+
+
+  private makeSolarCanopyStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 15 },
+        { parent: 'root', key: 'photo-a', type: 'photo', angle: -2.15, length: 18 },
+        { parent: 'root', key: 'photo-b', type: 'photo', angle: -1.45, length: 20 },
+        { parent: 'root', key: 'photo-c', type: 'photo', angle: -0.75, length: 22 },
+        { parent: 'root', key: 'photo-d', type: 'photo', angle: 0.75, length: 22 },
+        { parent: 'root', key: 'photo-e', type: 'photo', angle: 1.45, length: 20 },
+        { parent: 'root', key: 'photo-f', type: 'photo', angle: 2.15, length: 18 },
+        { parent: 'root', key: 'glow-core', type: 'glow', angle: 0, length: 12 },
+        { parent: 'root', key: 'armor-left', type: 'armor', angle: -Math.PI * 0.5, length: 12 },
+        { parent: 'root', key: 'armor-right', type: 'armor', angle: Math.PI * 0.5, length: 12 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI, length: 13 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 0.58, length: 11 },
+      ],
+      { velocity: 0.07, angularVelocity: [-0.003, 0.003], maturityAge: [170, 340], lifespanFactor: [3.2, 4.8], lineageName: 'Solar Canopy' },
+    );
+  }
+
+  private makeBloomTowerStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 16 },
+        { parent: 'root', key: 'stem-a', type: 'structure', angle: -1.1, length: 14 },
+        { parent: 'root', key: 'stem-b', type: 'structure', angle: 1.1, length: 14 },
+        { parent: 'stem-a', key: 'photo-a', type: 'photo', angle: -1.9, length: 19 },
+        { parent: 'stem-a', key: 'photo-b', type: 'photo', angle: -0.7, length: 18 },
+        { parent: 'stem-b', key: 'photo-c', type: 'photo', angle: 0.7, length: 18 },
+        { parent: 'stem-b', key: 'photo-d', type: 'photo', angle: 1.9, length: 19 },
+        { parent: 'root', key: 'glide-left', type: 'glide', angle: -2.3, length: 18 },
+        { parent: 'root', key: 'glide-right', type: 'glide', angle: 2.3, length: 18 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: 0, length: 12 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI, length: 14 },
+        { parent: 'root', key: 'camo', type: 'camo', angle: Math.PI * 0.5, length: 10 },
+      ],
+      { velocity: 0.1, angularVelocity: [-0.005, 0.005], maturityAge: [160, 320], lifespanFactor: [3.0, 4.6], lineageName: 'Bloom Tower' },
+    );
+  }
+
+  private makeNovaHunterPrimeStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 14 },
+        { parent: 'root', key: 'pred-left', type: 'predator', angle: -0.45, length: 20 },
+        { parent: 'root', key: 'pred-right', type: 'predator', angle: 0.45, length: 20 },
+        { parent: 'root', key: 'brain', type: 'brain', angle: 0, length: 12 },
+        { parent: 'root', key: 'sense-left', type: 'perception', angle: -0.95, length: 15 },
+        { parent: 'root', key: 'sense-right', type: 'perception', angle: 0.95, length: 15 },
+        { parent: 'root', key: 'prop-left-a', type: 'propulsion', angle: -2.1, length: 9 },
+        { parent: 'root', key: 'prop-right-a', type: 'propulsion', angle: 2.1, length: 9 },
+        { parent: 'root', key: 'prop-left-b', type: 'propulsion', angle: -2.7, length: 10 },
+        { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.7, length: 10 },
+        { parent: 'root', key: 'venom-left', type: 'venom', angle: -0.15, length: 12 },
+        { parent: 'root', key: 'venom-right', type: 'venom', angle: 0.15, length: 12 },
+        { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
+      ],
+      { velocity: 0.31, angularVelocity: [-0.012, 0.012], maturityAge: [130, 240], lifespanFactor: [2.6, 3.8], lineageName: 'Nova Hunter Prime' },
+    );
+  }
+
+  private makeWebLancerStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 14 },
+        { parent: 'root', key: 'launcher-left', type: 'launcher', angle: -0.52, length: 18 },
+        { parent: 'root', key: 'launcher-right', type: 'launcher', angle: 0.52, length: 18 },
+        { parent: 'root', key: 'sense', type: 'perception', angle: 0, length: 16 },
+        { parent: 'root', key: 'brain', type: 'brain', angle: -Math.PI * 0.5, length: 11 },
+        { parent: 'root', key: 'glow', type: 'glow', angle: Math.PI * 0.5, length: 10 },
+        { parent: 'root', key: 'prop-left-a', type: 'propulsion', angle: -2.15, length: 10 },
+        { parent: 'root', key: 'prop-right-a', type: 'propulsion', angle: 2.15, length: 10 },
+        { parent: 'root', key: 'prop-left-b', type: 'propulsion', angle: -2.75, length: 10 },
+        { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.75, length: 10 },
+        { parent: 'root', key: 'camo', type: 'camo', angle: Math.PI, length: 10 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI * 0.75, length: 12 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 1.25, length: 12 },
+      ],
+      { velocity: 0.28, angularVelocity: [-0.011, 0.011], maturityAge: [135, 255], lifespanFactor: [2.7, 3.9], lineageName: 'Web Lancer' },
     );
   }
 
@@ -3633,7 +3720,7 @@ export class World {
       lifespan,
       lineageId: id,
       founderId: id,
-      lineageName: id,
+      lineageName: this.makeRandomLineageName(),
     };
   }
 

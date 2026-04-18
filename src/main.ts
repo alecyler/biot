@@ -84,7 +84,8 @@ const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
 const PORTRAIT_QUERY = window.matchMedia("(max-width: 900px) and (orientation: portrait)");
 const WORLD_SNAPSHOT_KEY = "biots-world-snapshot-v1";
 const hadPendingResetNavigation = consumePendingResetNavigation();
-
+const INITIAL_FLOWER_COUNT = 100;
+const INITIAL_HUNTER_COUNT = 28;
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -228,7 +229,13 @@ function restoreWorldSnapshot(): boolean {
 }
 
 function seedFreshWorld(): void {
-  world.seed(72);
+  world.seed(0);
+  for (let i = 0; i < INITIAL_FLOWER_COUNT; i += 1) {
+    world.spawnStarterFlower();
+  }
+  for (let i = 0; i < INITIAL_HUNTER_COUNT; i += 1) {
+    world.spawnStarterHunter();
+  }
   world.setCuckooBlueprints(getSavedBlueprintSegments());
 }
 
@@ -319,12 +326,6 @@ rotateRibbonHint();
 initializeAds();
 initializeMobilePanels();
 setLabTab("inspector");
-if (!restoredWorld) {
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("hunter");
-}
 hideHelpDrawer();
 showSplash();
 
@@ -348,11 +349,13 @@ helpDrawerClose.addEventListener("click", () => {
 quickSpawnFlowerBtn.addEventListener("click", () => {
   spawnFromSavedPool("flower", 10);
   hintRibbonText.textContent = "Dropped in a bouquet of 10 flowers to help rebalance the tank.";
+  helpDrawerTip.textContent = "Bouquets are the fast way to restart a starving food web after late-game hunter pileups.";
 });
 
 quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
   hintRibbonText.textContent = "Dropped in one hunter from your saved hunter pool.";
+  helpDrawerTip.textContent = "Single hunters are better for gentle pressure. Use flowers in bulk when the web collapses.";
 });
 
 chaosEventBtn.addEventListener("click", () => {
@@ -409,7 +412,6 @@ saveSelectedBiotBtn.addEventListener("click", () => {
 initializeBiotBuilder((segments, mature, lineageName) => {
   const spawned = world.spawnDesignedBiot(segments, mature, lineageName);
   selectedBiotId = spawned.id;
-  setLabTab("inspector", MOBILE_QUERY.matches);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   lastRenderedVersion = -1;
   paused = false;
