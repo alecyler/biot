@@ -438,7 +438,7 @@ export function loadBiotIntoBuilder(incoming: Segment[], favoriteName?: string):
   externalLoadBlueprint?.(cloneSegments(incoming), favoriteName);
 }
 
-export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boolean) => void): void {
+export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boolean, lineageName?: string) => void): void {
   const refs = getBuilderRefs();
   refs.canvas.width = 320;
   refs.canvas.height = 320;
@@ -454,6 +454,7 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
   let selectedSegmentId = segments[0].id;
   let selectedParentId = segments[0].id;
   let favorites = getSavedBlueprints();
+  let currentBlueprintName = "";
 
   const applyBlueprint = (incoming: Segment[], favoriteName?: string): void => {
     segments = sanitizeImportedSegments(cloneSegments(incoming));
@@ -461,6 +462,7 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     selectedParentId = "root";
     refs.importArea.value = JSON.stringify(segments, null, 2);
     refs.favoriteName.value = favoriteName ?? "";
+    currentBlueprintName = favoriteName?.trim() ?? "";
     refreshControls();
     refs.status.textContent = favoriteName
       ? `Loaded "${favoriteName}" into the builder.`
@@ -656,11 +658,13 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     selectedParentId = "root";
     refs.importArea.value = "";
     refs.favoriteName.value = "";
+    currentBlueprintName = "";
     refreshControls();
   });
 
   refs.spawnBtn.addEventListener("click", () => {
-    onSpawn(cloneSegments(segments), refs.spawnMature.checked);
+    const lineageName = refs.favoriteName.value.trim() || currentBlueprintName || undefined;
+    onSpawn(cloneSegments(segments), refs.spawnMature.checked, lineageName);
     refs.status.textContent = `Spawned ${refs.spawnMature.checked ? "mature" : "young"} custom biot into the world.`;
   });
 
@@ -669,6 +673,7 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     favorites = saveFavoriteBlueprint(name, segments);
     syncFavorites();
     refs.favoritesSelect.value = name;
+    currentBlueprintName = name;
     refs.status.textContent = `Saved favorite "${name}".`;
   });
 
@@ -700,6 +705,7 @@ export function initializeBiotBuilder(onSpawn: (segments: Segment[], mature: boo
     try {
       const parsed = JSON.parse(refs.importArea.value) as Segment[];
       applyBlueprint(parsed);
+      currentBlueprintName = refs.favoriteName.value.trim() || currentBlueprintName;
       refs.status.textContent = "Imported blueprint.";
     } catch {
       refs.status.textContent = "Could not import that blueprint. Paste valid JSON and try again.";

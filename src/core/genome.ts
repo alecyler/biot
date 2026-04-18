@@ -201,6 +201,7 @@ export function createDesignedBiot(
   energy: number,
   segments: Segment[],
   mature: boolean,
+  lineageName?: string,
 ): Biot {
   const normalizedSegments = normalizeDesignedSegments(segments);
   const maturityAge = rollMaturityAge();
@@ -232,10 +233,11 @@ export function createDesignedBiot(
     lifespan,
     lineageId: id,
     founderId: id,
+    lineageName: lineageName?.trim() || id,
   };
 }
 
-export function createRandomBiot(id: string, x: number, y: number, energy: number): Biot {
+export function createRandomBiot(id: string, x: number, y: number, energy: number, lineageName?: string): Biot {
   const baseCount = randomInt(3, 6);
   const segments: Segment[] = [];
 
@@ -299,6 +301,7 @@ export function createRandomBiot(id: string, x: number, y: number, energy: numbe
     lifespan,
     lineageId: id,
     founderId: id,
+    lineageName: lineageName?.trim() || id,
   };
 }
 
@@ -472,5 +475,6 @@ export function cloneWithMutation(
     lifespan,
     lineageId: parent.lineageId,
     founderId: parent.founderId,
+    lineageName: parent.lineageName,
   };
 }

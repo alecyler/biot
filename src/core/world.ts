@@ -282,6 +282,28 @@ interface EggPod {
   lineageId: string;
 }
 
+interface WorldSnapshot {
+  version: 1;
+  nextId: number;
+  stats: Pick<WorldStats, "tick" | "births" | "deaths">;
+  currentLightMultiplier: number;
+  currentTemperature: number;
+  biots: Biot[];
+  gravityZones: GravityZone[];
+  fireZones: FireZone[];
+  lightZones: LightZone[];
+  projectiles: Projectile[];
+  disasters: DisasterZone[];
+  carrion: CarrionPellet[];
+  eggPods: EggPod[];
+  lightningArcs: LightningArc[];
+  webZones: WebZone[];
+  lineageBirths: Array<[string, number]>;
+}
+
+const RANDOM_LINEAGE_PREFIXES = ["Amber", "Arc", "Ash", "Bloom", "Brass", "Bright", "Cinder", "Cloud", "Coral", "Dawn", "Drift", "Ember", "Fern", "Flint", "Frost", "Glow", "Glimmer", "Iron", "Jade", "Luna", "Moss", "Nova", "Pebble", "Quartz", "Reef", "Sable", "Solar", "Thorn", "Tide", "Velvet"];
+const RANDOM_LINEAGE_SUFFIXES = ["Bloom", "Claw", "Coil", "Crawler", "Dancer", "Drifter", "Fin", "Flare", "Glider", "Grazer", "Hunter", "Kite", "Lancer", "Maw", "Mite", "Needle", "Orb", "Pike", "Runner", "Skater", "Skiff", "Spinner", "Spire", "Sprig", "Sting", "Thorn", "Wisp"];
+
 export class World {
   public readonly config: WorldConfig;
   public biots: Biot[] = [];
@@ -1276,7 +1298,7 @@ export class World {
     return { fires, storms, mutations };
   }
 
-  public spawnDesignedBiot(segments: Segment[], mature = true): Biot {
+  public spawnDesignedBiot(segments: Segment[], mature = true, lineageName?: string): Biot {
     const spawn = this.findDesignedBiotSpawn(segments);
     const biot = createDesignedBiot(
       this.makeId(),
@@ -1285,6 +1307,7 @@ export class World {
       this.config.spawnEnergy,
       segments,
       mature,
+      lineageName,
     );
     const energyCap = this.getEnergyCapacity(biot);
     const launchBonus = Math.max(18, Math.min(80, biot.segments.length * 2.4));
@@ -1714,6 +1737,7 @@ export class World {
       .map(([lineageId, members]) => ({
         lineageId,
         founderId: members[0]?.founderId ?? lineageId,
+        lineageName: members[0]?.lineageName ?? lineageId,
         livingCount: members.length,
         totalBirths: this.lineageBirths.get(lineageId) ?? members.length,
         avgGeneration:
@@ -3276,6 +3300,7 @@ export class World {
     hueJitter?: [number, number];
     maturityAge?: [number, number];
     lifespanFactor?: [number, number];
+    lineageName?: string;
   }): Biot {
     const id = this.makeId();
     const segments: Segment[] = segmentDefs.map((def) => ({
@@ -3323,6 +3348,7 @@ export class World {
       lifespan,
       lineageId: id,
       founderId: id,
+      lineageName: options?.lineageName?.trim() || id,
     };
   }
 
@@ -3501,11 +3527,13 @@ export class World {
   }
 
   private makeRandomBiot(): Biot {
+    const lineageName = this.makeRandomLineageName();
     const biot = createRandomBiot(
       this.makeId(),
       randomRange(0, this.config.width),
       randomRange(0, this.config.height),
       this.config.spawnEnergy,
+      lineageName,
     );
 
     biot.energy = this.getEnergyCapacity(biot);
@@ -3605,6 +3633,7 @@ export class World {
       lifespan,
       lineageId: id,
       founderId: id,
+      lineageName: id,
     };
   }
 
@@ -3702,6 +3731,7 @@ export class World {
       lifespan,
       lineageId: id,
       founderId: id,
+      lineageName: id,
     };
   }
 
@@ -3781,6 +3811,75 @@ export class World {
     if (this.lightningArcs.length > MAX_LIGHTNING_ARCS) {
       this.lightningArcs.splice(0, this.lightningArcs.length - MAX_LIGHTNING_ARCS);
     }
+  }
+
+
+  public exportSnapshot(): WorldSnapshot {
+    return {
+      version: 1,
+      nextId: this.nextId,
+      stats: {
+        tick: this.stats.tick,
+        births: this.stats.births,
+        deaths: this.stats.deaths,
+      },
+      currentLightMultiplier: this.currentLightMultiplier,
+      currentTemperature: this.currentTemperature,
+      biots: structuredClone(this.biots),
+      gravityZones: structuredClone(this.gravityZones),
+      fireZones: structuredClone(this.fireZones),
+      lightZones: structuredClone(this.lightZones),
+      projectiles: structuredClone(this.projectiles),
+      disasters: structuredClone(this.disasters),
+      carrion: structuredClone(this.carrion),
+      eggPods: structuredClone(this.eggPods),
+      lightningArcs: structuredClone(this.lightningArcs),
+      webZones: structuredClone(this.webZones),
+      lineageBirths: Array.from(this.lineageBirths.entries()),
+    };
+  }
+
+  public importSnapshot(snapshot: WorldSnapshot): boolean {
+    if (!snapshot || snapshot.version !== 1 || !Array.isArray(snapshot.biots)) return false;
+
+    this.biots = structuredClone(snapshot.biots).map((biot) => ({
+      ...biot,
+      lineageName: biot.lineageName || biot.lineageId,
+    }));
+    this.nextId = Number.isFinite(snapshot.nextId) ? Math.max(1, snapshot.nextId) : 1;
+    this.stats.tick = Number.isFinite(snapshot.stats?.tick) ? snapshot.stats.tick : 0;
+    this.stats.births = Number.isFinite(snapshot.stats?.births) ? snapshot.stats.births : 0;
+    this.stats.deaths = Number.isFinite(snapshot.stats?.deaths) ? snapshot.stats.deaths : 0;
+    this.lineageBirths.clear();
+    for (const [lineageId, births] of snapshot.lineageBirths ?? []) {
+      this.lineageBirths.set(lineageId, births);
+    }
+    this.crowdedTicks = 0;
+    this.gravityZones = structuredClone(snapshot.gravityZones ?? []);
+    this.fireZones = structuredClone(snapshot.fireZones ?? []);
+    this.lightZones = structuredClone(snapshot.lightZones ?? []);
+    this.projectiles = structuredClone(snapshot.projectiles ?? []);
+    this.disasters = structuredClone(snapshot.disasters ?? []);
+    this.carrion = structuredClone(snapshot.carrion ?? []);
+    this.eggPods = structuredClone(snapshot.eggPods ?? []).map((egg) => ({
+      ...egg,
+      child: { ...egg.child, lineageName: egg.child.lineageName || egg.child.lineageId },
+    }));
+    this.lightningArcs = structuredClone(snapshot.lightningArcs ?? []);
+    this.webZones = structuredClone(snapshot.webZones ?? []);
+    this.biotSpatialIndex.clear();
+    this.currentLightMultiplier = Number.isFinite(snapshot.currentLightMultiplier) ? snapshot.currentLightMultiplier : 1;
+    this.currentTemperature = Number.isFinite(snapshot.currentTemperature) ? snapshot.currentTemperature : 1;
+    this.environmentVersion += 1;
+    this.refreshStats();
+    return true;
+  }
+
+  private makeRandomLineageName(): string {
+    const prefix = pickOne(RANDOM_LINEAGE_PREFIXES);
+    const suffix = pickOne(RANDOM_LINEAGE_SUFFIXES);
+    const serial = ((this.nextId - 1) % 89) + 1;
+    return `${prefix} ${suffix} ${serial}`;
   }
 
   private refreshStats(): void {

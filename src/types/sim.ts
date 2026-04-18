@@ -68,6 +68,7 @@ export interface Biot {
   lifespan: number;
   lineageId: string;
   founderId: string;
+  lineageName: string;
 }
 
 export interface WorldConfig {
@@ -98,6 +99,7 @@ export interface WorldStats {
 export interface LineageSummary {
   lineageId: string;
   founderId: string;
+  lineageName: string;
   livingCount: number;
   totalBirths: number;
   avgGeneration: number;

@@ -8,6 +8,7 @@ const GRID_SPACING = 48;
 export class CanvasRenderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
+  private biotScale = 1;
 
   public constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -16,6 +17,10 @@ export class CanvasRenderer {
       throw new Error("Unable to acquire 2D canvas context.");
     }
     this.ctx = context;
+  }
+
+  public setBiotScale(scale: number): void {
+    this.biotScale = Math.max(0.72, Math.min(1.05, scale));
   }
 
   public resize(width: number, height: number): void {
@@ -42,7 +47,7 @@ export class CanvasRenderer {
     this.drawDisasters(env.disasters);
 
     for (const biot of world.biots) {
-      const rendered = buildRenderedSegments(biot);
+      const rendered = this.scaleRenderedSegments(buildRenderedSegments(biot));
       this.drawBiot(biot, rendered, biot.hueJitter, biot.id === selectedBiotId, biot.hitSegmentTimers);
     }
 
@@ -293,6 +298,23 @@ export class CanvasRenderer {
     }
   }
 
+
+  private scaleRenderedSegments(rendered: RenderedSegment[]): RenderedSegment[] {
+    if (this.biotScale === 1 || rendered.length === 0) return rendered;
+    const center = this.getRenderedCenter(rendered);
+    return rendered.map((line) => ({
+      ...line,
+      from: {
+        x: center.x + (line.from.x - center.x) * this.biotScale,
+        y: center.y + (line.from.y - center.y) * this.biotScale,
+      },
+      to: {
+        x: center.x + (line.to.x - center.x) * this.biotScale,
+        y: center.y + (line.to.y - center.y) * this.biotScale,
+      },
+    }));
+  }
+
   private drawBiot(
     biot: World["biots"][number],
     rendered: RenderedSegment[],
@@ -485,6 +507,7 @@ export class CanvasRenderer {
   }
 
   private drawLegend(height: number): void {
+    if (window.matchMedia("(max-width: 900px)").matches) return;
     const items = [
       { color: "rgba(255, 220, 110, 0.95)", label: "Light zone — plant-rich bright pocket" },
       { color: "rgba(120, 190, 255, 0.95)", label: "Blue gravity — pull / weight well" },

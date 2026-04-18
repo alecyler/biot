@@ -218,6 +218,7 @@ export function renderInspector(
   const dormantAdvanced = ADVANCED_SEGMENT_TYPES.reduce((sum: number, type) => sum + (isSegmentActiveForBiot(biot, type) ? 0 : counts[type] ?? 0), 0);
 
   target.innerHTML = [
+    `Lineage: <strong>${biot.lineageName}</strong>`,
     `ID: <strong>${biot.id}</strong>`,
     `Generation: <strong>${biot.generation}</strong>`,
     `Life stage: <strong>${stage}</strong> (${Math.round(stageProgress * 100)}%)`,

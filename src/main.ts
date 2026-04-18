@@ -22,6 +22,7 @@ const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
 const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
 const chaosEventBtnNode = document.getElementById("chaosEventBtn");
+const resetWorldBtnNode = document.getElementById("resetWorldBtn");
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
@@ -38,7 +39,8 @@ if (
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
   !(quickSpawnHunterBtnNode instanceof HTMLButtonElement) ||
-  !(chaosEventBtnNode instanceof HTMLButtonElement)
+  !(chaosEventBtnNode instanceof HTMLButtonElement) ||
+  !(resetWorldBtnNode instanceof HTMLButtonElement)
 ) {
   throw new Error("Missing required DOM nodes for current UI.");
 }
@@ -58,7 +60,10 @@ const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
 const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
+const resetWorldBtn = resetWorldBtnNode;
 
+const WORLD_SNAPSHOT_KEY = "biotarium-world-snapshot-v1";
+const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -75,7 +80,10 @@ const config: WorldConfig = {
 
 const world = new World(config);
 world.setCuckooBlueprints(getSavedBlueprintSegments());
-world.seed(72);
+const restoredWorld = restoreWorldSnapshot();
+if (!restoredWorld) {
+  world.seed(72);
+}
 
 const renderer = new CanvasRenderer(canvas);
 
@@ -111,7 +119,66 @@ function hideSplash(): void {
 function resize(): void {
   config.width = Math.max(400, viewport.clientWidth);
   config.height = Math.max(400, window.innerHeight);
+  renderer.setBiotScale(MOBILE_QUERY.matches ? 0.84 : 1);
   renderer.resize(config.width, config.height);
+  document.body.classList.toggle("mobile-ui", MOBILE_QUERY.matches);
+}
+
+function saveWorldSnapshot(): void {
+  try {
+    window.localStorage.setItem(WORLD_SNAPSHOT_KEY, JSON.stringify(world.exportSnapshot()));
+  } catch {
+    // Ignore persistence failures.
+  }
+}
+
+function restoreWorldSnapshot(): boolean {
+  try {
+    const raw = window.localStorage.getItem(WORLD_SNAPSHOT_KEY);
+    if (!raw) return false;
+    return world.importSnapshot(JSON.parse(raw));
+  } catch {
+    return false;
+  }
+}
+
+function clearWorldSnapshot(): void {
+  try {
+    window.localStorage.removeItem(WORLD_SNAPSHOT_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function resetWorld(): void {
+  clearWorldSnapshot();
+  world.seed(72);
+  world.setCuckooBlueprints(getSavedBlueprintSegments());
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("hunter");
+  selectedBiotId = null;
+  lastRenderedVersion = -1;
+  paused = false;
+  saveWorldSnapshot();
+}
+
+function initializeMobilePanels(): void {
+  if (!MOBILE_QUERY.matches) return;
+  const inspectorPanel = document.getElementById("inspector-panel");
+  const builderPanel = document.getElementById("builder-panel");
+  if (inspectorPanel instanceof HTMLDetailsElement) inspectorPanel.open = false;
+  if (builderPanel instanceof HTMLDetailsElement) builderPanel.open = false;
+  const panels = [inspectorPanel, builderPanel].filter((panel): panel is HTMLDetailsElement => panel instanceof HTMLDetailsElement);
+  for (const panel of panels) {
+    panel.addEventListener("toggle", () => {
+      if (!MOBILE_QUERY.matches || !panel.open) return;
+      for (const other of panels) {
+        if (other !== panel) other.open = false;
+      }
+    });
+  }
 }
 
 function refreshHintText(): void {
@@ -132,7 +199,7 @@ function spawnFromSavedPool(category: "flower" | "hunter"): void {
   const pool = getSavedBlueprintsByCategory(category);
   if (pool.length > 0) {
     const pick = pool[Math.floor(Math.random() * pool.length)];
-    world.spawnDesignedBiot(pick.segments, true);
+    world.spawnDesignedBiot(pick.segments, true, pick.name);
   } else if (category === "flower") {
     world.spawnStarterFlower();
   } else {
@@ -144,15 +211,19 @@ function spawnFromSavedPool(category: "flower" | "hunter"): void {
 
 resize();
 initializeDraggablePanels();
+initializeMobilePanels();
 window.addEventListener("resize", resize);
 
 refreshHintText();
 rotateRibbonHint();
 initializeAdSenseBanner();
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("hunter");
+if (!restoredWorld) {
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("hunter");
+}
+saveWorldSnapshot();
 showSplash();
 
 helpBtn.addEventListener("click", () => {
@@ -173,6 +244,11 @@ chaosEventBtn.addEventListener("click", () => {
   hintRibbonText.textContent = `Chaos: ${result.mutations} mutations, ${result.fires} fires, ${result.storms} storms.`;
   paused = false;
   lastRenderedVersion = -1;
+  saveWorldSnapshot();
+});
+
+resetWorldBtn.addEventListener("click", () => {
+  resetWorld();
 });
 
 splashStartBtn.addEventListener("click", () => {
@@ -198,8 +274,9 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   const selected = selectedBiotId ? world.getBiotById(selectedBiotId) : null;
   if (!selected) return;
 
-  saveFavoriteBlueprint(`Captured ${selected.id}`, selected.segments);
-  loadBiotIntoBuilder(selected.segments, `Captured ${selected.id}`);
+  const capturedName = selected.lineageName ? `${selected.lineageName} capture` : `Captured ${selected.id}`;
+  saveFavoriteBlueprint(capturedName, selected.segments);
+  loadBiotIntoBuilder(selected.segments, capturedName);
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   saveSelectedBiotBtn.textContent = "Species saved to builder";
 
@@ -208,12 +285,13 @@ saveSelectedBiotBtn.addEventListener("click", () => {
   }, 1200);
 });
 
-initializeBiotBuilder((segments, mature) => {
-  const spawned = world.spawnDesignedBiot(segments, mature);
+initializeBiotBuilder((segments, mature, lineageName) => {
+  const spawned = world.spawnDesignedBiot(segments, mature, lineageName);
   selectedBiotId = spawned.id;
   world.setCuckooBlueprints(getSavedBlueprintSegments());
   lastRenderedVersion = -1;
   paused = false;
+  saveWorldSnapshot();
 });
 
 canvas.addEventListener("click", (event) => {
@@ -224,6 +302,9 @@ canvas.addEventListener("click", (event) => {
   const biot = world.findBiotAt(x, y);
   selectedBiotId = biot?.id ?? null;
 });
+
+window.addEventListener("beforeunload", saveWorldSnapshot);
+window.setInterval(saveWorldSnapshot, 5000);
 
 let lastStep = performance.now();
 const stepMs = 50;
