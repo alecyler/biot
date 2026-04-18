@@ -242,8 +242,11 @@ window.addEventListener("resize", () => {
 
 refreshHintText();
 rotateRibbonHint();
-initializeAds();
-initializeMobilePanels();
+initializeAdSenseBanner();
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("hunter");
 showSplash();
 
 if (hadPendingResetNavigation) {
