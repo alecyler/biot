@@ -175,13 +175,13 @@ function rotateRibbonHint(): void {
 function spawnFromSavedPool(category: "flower" | "hunter", count = 1): void {
   const pool = getSavedBlueprintsByCategory(category);
   for (let index = 0; index < count; index += 1) {
-    if (pool.length > 0) {
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      world.spawnDesignedBiot(pick.segments, true);
-    } else if (category === "flower") {
-      world.spawnStarterFlower();
-    } else {
-      world.spawnStarterHunter();
+  if (pool.length > 0) {
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    world.spawnDesignedBiot(pick.segments, true);
+  } else if (category === "flower") {
+    world.spawnStarterFlower();
+  } else {
+    world.spawnStarterHunter();
     }
   }
   paused = false;
