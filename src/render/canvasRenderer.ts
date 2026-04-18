@@ -394,6 +394,7 @@ export class CanvasRenderer {
       this.ctx.arc(center.x, center.y, 22, 0, Math.PI * 2);
       this.ctx.stroke();
       this.ctx.restore();
+      this.drawSelectedLineagePin(center, biot.lineageName || biot.id);
     }
 
     const camoCount = biot.segments.filter((segment) => segment.type === "camo").length;
@@ -442,6 +443,42 @@ export class CanvasRenderer {
       this.drawJoint(line.from, selected, lifeStage);
       this.drawTip(line.to, line, selected, lifeStage);
     }
+  }
+
+
+  private drawSelectedLineagePin(center: { x: number; y: number }, label: string): void {
+    const trimmed = label.length > 26 ? `${label.slice(0, 23)}…` : label;
+    this.ctx.save();
+    this.ctx.font = "12px system-ui, sans-serif";
+    this.ctx.textBaseline = "middle";
+    const textWidth = this.ctx.measureText(trimmed).width;
+    const pillWidth = textWidth + 28;
+    const pillHeight = 22;
+    const x = center.x - pillWidth / 2;
+    const y = center.y - 38;
+
+    this.ctx.fillStyle = "rgba(9, 16, 26, 0.9)";
+    this.ctx.strokeStyle = "rgba(255,255,255,0.26)";
+    this.ctx.lineWidth = 1;
+    this.ctx.beginPath();
+    this.ctx.roundRect(x, y, pillWidth, pillHeight, 11);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = "rgba(255, 214, 102, 0.98)";
+    this.ctx.beginPath();
+    this.ctx.arc(x + 11, y + pillHeight / 2, 4, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = "rgba(255,255,255,0.95)";
+    this.ctx.fillText(trimmed, x + 20, y + pillHeight / 2 + 0.5);
+
+    this.ctx.strokeStyle = "rgba(255,255,255,0.42)";
+    this.ctx.beginPath();
+    this.ctx.moveTo(center.x, y + pillHeight);
+    this.ctx.lineTo(center.x, center.y - 18);
+    this.ctx.stroke();
+    this.ctx.restore();
   }
 
   private drawJoint(point: { x: number; y: number }, selected: boolean, lifeStage = 1): void {

@@ -72,6 +72,7 @@ const chaosEventBtn = chaosEventBtnNode;
 const resetWorldBtn = resetWorldBtnNode instanceof HTMLButtonElement ? resetWorldBtnNode : null;
 
 const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+const PORTRAIT_QUERY = window.matchMedia("(max-width: 900px) and (orientation: portrait)");
 const WORLD_SNAPSHOT_KEY = "biots-world-snapshot-v1";
 const hadPendingResetNavigation = consumePendingResetNavigation();
 
@@ -109,6 +110,12 @@ const splashHints = [
   "Cheap plants keep the food web alive. Too many predators will collapse it.",
   "Click a biot to inspect it, then save survivors back into the builder.",
   "Builder favorites are a great way to seed stable lineages quickly.",
+  "Portrait is playable. Landscape gives you a calmer spectator view once the tank is busy.",
+  "Brains shine when paired with perception and propulsion. A lone brain mostly just burns energy.",
+  "Glow helps photosynthesis in dim light, but it also makes a species easier to spot.",
+  "Advanced segments stay dormant until maturity, so juvenile builds can look weaker than the adults they become.",
+  "Armor and structure stretch lifespan; cheap flowers are still the backbone of a healthy tank.",
+  "Want weird hidden-feeling tech? Try perception + brain + launcher, or camo + glow for risky ambushers.",
 ];
 
 const ribbonHints = [
@@ -117,6 +124,13 @@ const ribbonHints = [
   "If the world crashes, add more cheap producers.",
   "Saved favorites can become future cuckoo eggs.",
   "Inspect survivors and capture them back into the builder.",
+  "Perception + brain + propulsion creates much smarter roaming hunters.",
+  "Glow boosts photosynthesis in dim spots, but it is also a flashing dinner bell.",
+  "Structure and armor help long-lived flower lines survive the grind.",
+  "Advanced parts wake up at maturity. Juveniles may look plain before they come online.",
+  "Launcher, lightning, flame, and frost work best once a food web already exists.",
+  "Portrait keeps controls close; landscape is nicer when you mostly want to watch.",
+  "Camo cuts visibility. Glow does the opposite. Mixing them creates risky tradeoffs.",
 ];
 
 function showSplash(): void {
@@ -152,7 +166,10 @@ function setLabTab(tab: "inspector" | "builder", openPanel = false): void {
 
 function syncResponsiveUi(): void {
   const mobileUi = window.innerWidth <= 900 || window.matchMedia("(pointer: coarse)").matches;
+  const portraitMobile = mobileUi && PORTRAIT_QUERY.matches;
   document.body.classList.toggle("mobile-ui", mobileUi);
+  document.body.classList.toggle("portrait-mobile", portraitMobile);
+  document.body.classList.toggle("landscape-mobile", mobileUi && !portraitMobile);
   if (mobileUi && !labPanel.open) {
     setLabTab("inspector");
   } else if (!mobileUi) {
@@ -234,13 +251,20 @@ function refreshHintText(): void {
   splashHint.textContent = splashHints[splashIndex];
 }
 
+function getOrientationHint(): string | null {
+  if (!MOBILE_QUERY.matches) return null;
+  return PORTRAIT_QUERY.matches
+    ? "Portrait mode keeps the controls at the bottom. Landscape is best when you mostly want to watch."
+    : "Landscape gives you the widest spectator view. Portrait keeps the controls closer to your thumbs.";
+}
+
 function rotateRibbonHint(): void {
   let index = 0;
-  hintRibbonText.textContent = ribbonHints[index];
+  hintRibbonText.textContent = getOrientationHint() ?? ribbonHints[index];
   window.setInterval(() => {
     index = (index + 1) % ribbonHints.length;
-    hintRibbonText.textContent = ribbonHints[index];
-  }, 4000);
+    hintRibbonText.textContent = getOrientationHint() ?? ribbonHints[index];
+  }, 5000);
 }
 
 function spawnFromSavedPool(category: "flower" | "hunter"): void {
@@ -263,6 +287,7 @@ initializeDraggablePanels();
 window.addEventListener("resize", () => {
   syncResponsiveUi();
   resize();
+  hintRibbonText.textContent = getOrientationHint() ?? hintRibbonText.textContent;
 });
 
 refreshHintText();
@@ -270,16 +295,20 @@ rotateRibbonHint();
 initializeAds();
 initializeMobilePanels();
 setLabTab("inspector");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("flower");
-spawnFromSavedPool("hunter");
+if (!restoredWorld) {
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("flower");
+  spawnFromSavedPool("hunter");
+}
 showSplash();
 
 if (hadPendingResetNavigation) {
   hintRibbonText.textContent = rewardHookIsAvailable()
     ? "World reset. Interstitial/reward hooks are armed for the next monetization pass."
     : "World reset. Web reset navigation is now ready for AdSense vignette testing once Auto ads are enabled.";
+} else if (restoredWorld) {
+  hintRibbonText.textContent = "Recovered your previous tank from local save. Use Reset world if you want a clean slate.";
 }
 
 helpBtn.addEventListener("click", () => {

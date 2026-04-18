@@ -1063,3 +1063,115 @@ body.mobile-ui #lab-pane-inspector .row button {
     max-height: min(25svh, 190px);
   }
 }
+
+
+.splash-mode-note {
+  margin: -6px 0 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(90, 150, 255, 0.09);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  color: #d7e7fb;
+  font-size: 14px;
+}
+
+body.mobile-ui.portrait-mobile #top-stats {
+  left: 8px;
+  right: 8px;
+  top: auto;
+  bottom: 120px;
+  padding: 6px;
+  background: rgba(9, 16, 26, 0.84);
+}
+
+body.mobile-ui.portrait-mobile #stats {
+  max-height: 56px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  padding-bottom: 2px;
+}
+
+body.mobile-ui.portrait-mobile .stat-pill {
+  flex: 0 0 auto;
+}
+
+body.mobile-ui.portrait-mobile #action-strip {
+  left: 8px;
+  right: 54px;
+  top: auto;
+  bottom: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0;
+}
+
+body.mobile-ui.portrait-mobile #hint-ribbon {
+  left: 8px;
+  right: 54px;
+  top: auto;
+  bottom: 88px;
+  max-width: none;
+  padding: 8px 10px;
+}
+
+body.mobile-ui.portrait-mobile #helpBtn {
+  bottom: 12px;
+  right: 12px;
+}
+
+body.mobile-ui.portrait-mobile #ad-banner-shell {
+  display: none;
+}
+
+body.mobile-ui.portrait-mobile #lab-panel {
+  left: 8px !important;
+  right: 8px !important;
+  bottom: 170px;
+  top: auto !important;
+}
+
+body.mobile-ui.portrait-mobile #lab-panel > summary {
+  margin-left: auto;
+  margin-right: 0;
+  padding: 5px 9px;
+  font-size: 11px;
+}
+
+body.mobile-ui.portrait-mobile #lab-panel .hud-card {
+  margin-top: 6px;
+  max-height: min(26svh, 210px);
+  padding: 8px;
+}
+
+body.mobile-ui.portrait-mobile #builder-preview {
+  max-height: 96px;
+}
+
+body.mobile-ui.landscape-mobile #top-stats {
+  right: 56px;
+}
+
+body.mobile-ui.landscape-mobile #action-strip {
+  top: 58px;
+}
+
+body.mobile-ui.landscape-mobile #lab-panel {
+  bottom: 56px;
+}
+
+@media (max-width: 520px) {
+  body.mobile-ui.portrait-mobile #lab-panel {
+    bottom: 166px;
+  }
+
+  body.mobile-ui.portrait-mobile #lab-panel .hud-card {
+    max-height: min(24svh, 180px);
+  }
+
+  body.mobile-ui.portrait-mobile #action-strip button {
+    min-height: 36px;
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+}
