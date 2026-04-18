@@ -1,4 +1,4 @@
-const STORAGE_KEY = "biots-hud-layout-v4";
+const STORAGE_KEY = "biots-hud-layout-v5";
 
 function isMobileLayout(): boolean {
   return window.matchMedia("(max-width: 900px), (max-height: 560px)").matches;
@@ -89,8 +89,10 @@ function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number
   const viewportHeight = window.innerHeight;
   const rect = panel.getBoundingClientRect();
   const minTop = getTopSafeOffset();
-  const clampedWidth = clamp(width, 320, Math.max(320, viewportWidth - 12));
-  const clampedHeight = clamp(height ?? rect.height, 180, Math.max(180, viewportHeight - minTop - 8));
+  const minWidth = panel.id === "lab-panel" ? 520 : 320;
+  const minHeight = panel.id === "lab-panel" ? 360 : 180;
+  const clampedWidth = clamp(width, minWidth, Math.max(minWidth, viewportWidth - 12));
+  const clampedHeight = clamp(height ?? rect.height, minHeight, Math.max(minHeight, viewportHeight - minTop - 8));
   const clampedLeft = clamp(left, 8, Math.max(8, viewportWidth - clampedWidth - 8));
   const clampedTop = clamp(top, minTop, Math.max(minTop, viewportHeight - 56));
 
@@ -128,10 +130,12 @@ export function initializeDraggablePanels(): void {
 
     const rect = panel.getBoundingClientRect();
     const saved = savedLayout[panel.id as PanelId];
-    const width = saved?.width ?? rect.width;
-    const height = saved?.height ?? rect.height;
-    const left = saved?.left ?? rect.left;
-    const top = saved?.top ?? rect.top;
+    const defaultWidth = panel.id === "lab-panel" ? Math.max(rect.width, Math.min(1040, window.innerWidth - 32)) : rect.width;
+    const defaultHeight = panel.id === "lab-panel" ? Math.max(rect.height, Math.min(820, window.innerHeight - getTopSafeOffset() - 16)) : rect.height;
+    const width = saved?.width ?? defaultWidth;
+    const height = saved?.height ?? defaultHeight;
+    const left = saved?.left ?? Math.max(8, window.innerWidth - width - 16);
+    const top = saved?.top ?? Math.max(getTopSafeOffset(), 64);
     const zIndex = saved?.zIndex ?? maxZ;
     maxZ = Math.max(maxZ, zIndex + 1);
 
