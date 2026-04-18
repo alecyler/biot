@@ -82,7 +82,11 @@ function initializeBanner(): void {
   }
 }
 
-export function initializeAds(): void {
+export function initializeAdSenseBanner(): void {
   initializeAutoAds();
   initializeBanner();
+}
+
+export function initializeAds(): void {
+  initializeAdSenseBanner();
 }
