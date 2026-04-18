@@ -63,6 +63,10 @@ const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 const resetWorldBtn = resetWorldBtnNode;
 
+const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+const WORLD_SNAPSHOT_KEY = "biots-world-snapshot-v1";
+const hadPendingResetNavigation = consumePendingResetNavigation();
+
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -225,11 +229,15 @@ function spawnFromSavedPool(category: "flower" | "hunter"): void {
 syncResponsiveUi();
 resize();
 initializeDraggablePanels();
-window.addEventListener("resize", resize);
+window.addEventListener("resize", () => {
+  syncResponsiveUi();
+  resize();
+});
 
 refreshHintText();
 rotateRibbonHint();
-initializeAdSenseBanner();
+initializeAds();
+initializeMobilePanels();
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
 spawnFromSavedPool("flower");
