@@ -17,6 +17,20 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function isDesktopHudLayout(): boolean {
+  return window.innerWidth > 900 && !window.matchMedia("(pointer: coarse)").matches;
+}
+
+function clearPanelPosition(panel: HTMLDetailsElement): void {
+  panel.style.left = "";
+  panel.style.top = "";
+  panel.style.right = "";
+  panel.style.bottom = "";
+  panel.style.width = "";
+  panel.style.height = "";
+  panel.style.zIndex = "";
+}
+
 function readLayout(): LayoutMap {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -66,6 +80,7 @@ function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number
 }
 
 function persistPanel(panel: HTMLDetailsElement): void {
+  if (!isDesktopHudLayout()) return;
   const layout = readLayout();
   const currentRect = panel.getBoundingClientRect();
   layout[panel.id as PanelId] = {
@@ -98,8 +113,12 @@ export function initializeDraggablePanels(): void {
     const zIndex = saved?.zIndex ?? maxZ;
     maxZ = Math.max(maxZ, zIndex + 1);
 
-    applyPanelPosition(panel, left, top, width, height);
-    panel.style.zIndex = String(zIndex);
+    if (isDesktopHudLayout()) {
+      applyPanelPosition(panel, left, top, width, height);
+      panel.style.zIndex = String(zIndex);
+    } else {
+      clearPanelPosition(panel);
+    }
 
     let pointerId: number | null = null;
     let originX = 0;
@@ -109,7 +128,7 @@ export function initializeDraggablePanels(): void {
     let moved = false;
 
     summary.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) return;
+      if (!isDesktopHudLayout() || event.button !== 0) return;
       pointerId = event.pointerId;
       originX = event.clientX;
       originY = event.clientY;
@@ -123,7 +142,7 @@ export function initializeDraggablePanels(): void {
     });
 
     summary.addEventListener("pointermove", (event) => {
-      if (pointerId !== event.pointerId) return;
+      if (!isDesktopHudLayout() || pointerId !== event.pointerId) return;
       const dx = event.clientX - originX;
       const dy = event.clientY - originY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
@@ -162,8 +181,14 @@ export function initializeDraggablePanels(): void {
   window.addEventListener("resize", () => {
     const layout = readLayout();
     for (const panel of panels) {
+      if (!isDesktopHudLayout()) {
+        clearPanelPosition(panel);
+        continue;
+      }
+
       const rect = panel.getBoundingClientRect();
-      applyPanelPosition(panel, rect.left, rect.top, rect.width, rect.height);
+      const saved = layout[panel.id as PanelId];
+      applyPanelPosition(panel, saved?.left ?? rect.left, saved?.top ?? rect.top, saved?.width ?? rect.width, saved?.height ?? rect.height);
       const currentRect = panel.getBoundingClientRect();
       layout[panel.id as PanelId] = {
         left: currentRect.left,

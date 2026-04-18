@@ -3,7 +3,8 @@ import { World } from "./core/world";
 import { CanvasRenderer } from "./render/canvasRenderer";
 import { renderInspector, renderStats } from "./ui/controls";
 import { initializeDraggablePanels } from "./ui/draggablePanels";
-import { initializeAdSenseBanner } from "./ui/ads";
+import { initializeAds } from "./ui/ads";
+import { consumePendingResetNavigation, navigateToWorldReset, rewardHookIsAvailable } from "./ui/monetization";
 import { getSavedBlueprintSegments, getSavedBlueprintsByCategory, initializeBiotBuilder, loadBiotIntoBuilder, saveFavoriteBlueprint } from "./ui/builder";
 import type { WorldConfig } from "./types/sim";
 
@@ -62,8 +63,6 @@ const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 const resetWorldBtn = resetWorldBtnNode;
 
-const WORLD_SNAPSHOT_KEY = "biotarium-world-snapshot-v1";
-const MOBILE_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
 
 const config: WorldConfig = {
   width: Math.max(400, viewport.clientWidth),
@@ -114,6 +113,20 @@ function showSplash(): void {
 
 function hideSplash(): void {
   splashOverlay.hidden = true;
+}
+
+function syncResponsiveUi(): void {
+  const mobileUi = window.innerWidth <= 900 || window.matchMedia("(pointer: coarse)").matches;
+  document.body.classList.toggle("mobile-ui", mobileUi);
+
+  const inspectorPanel = document.getElementById("inspector-panel");
+  const builderPanel = document.getElementById("builder-panel");
+  if (inspectorPanel instanceof HTMLDetailsElement) {
+    inspectorPanel.open = !mobileUi;
+  }
+  if (builderPanel instanceof HTMLDetailsElement) {
+    builderPanel.open = true;
+  }
 }
 
 function resize(): void {
@@ -209,22 +222,25 @@ function spawnFromSavedPool(category: "flower" | "hunter"): void {
   lastRenderedVersion = -1;
 }
 
+syncResponsiveUi();
 resize();
 initializeDraggablePanels();
-initializeMobilePanels();
 window.addEventListener("resize", resize);
 
 refreshHintText();
 rotateRibbonHint();
 initializeAdSenseBanner();
-if (!restoredWorld) {
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("flower");
-  spawnFromSavedPool("hunter");
-}
-saveWorldSnapshot();
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("flower");
+spawnFromSavedPool("hunter");
 showSplash();
+
+if (hadPendingResetNavigation) {
+  hintRibbonText.textContent = rewardHookIsAvailable()
+    ? "World reset. Interstitial/reward hooks are armed for the next monetization pass."
+    : "World reset. Web reset navigation is now ready for AdSense vignette testing once Auto ads are enabled.";
+}
 
 helpBtn.addEventListener("click", () => {
   refreshHintText();
@@ -249,6 +265,14 @@ chaosEventBtn.addEventListener("click", () => {
 
 resetWorldBtn.addEventListener("click", () => {
   resetWorld();
+});
+
+resetWorldBtn.addEventListener("click", () => {
+  paused = true;
+  hintRibbonText.textContent = rewardHookIsAvailable()
+    ? "Resetting world and preparing the next reward break..."
+    : "Resetting world. If AdSense Auto ads with vignette are enabled, this navigation becomes your reset interstitial test hook.";
+  window.setTimeout(() => navigateToWorldReset(), 80);
 });
 
 splashStartBtn.addEventListener("click", () => {

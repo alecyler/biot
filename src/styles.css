@@ -28,7 +28,7 @@ body {
 #world {
   display: block;
   width: 100%;
-  height: 100vh;
+  height: 100svh;
   cursor: crosshair;
 }
 
@@ -722,121 +722,5 @@ textarea::placeholder {
     right: 12px;
     bottom: 8px;
     justify-content: center;
-  }
-}
-
-
-@media (max-width: 900px) {
-  #helpBtn {
-    top: auto;
-    bottom: 84px;
-    right: 12px;
-  }
-
-  #action-strip {
-    left: 12px;
-    right: 12px;
-    top: auto;
-    bottom: 126px;
-    max-width: none;
-    justify-content: stretch;
-  }
-
-  #action-strip button {
-    flex: 1 1 calc(50% - 6px);
-    min-height: 40px;
-    margin-top: 0;
-    padding: 9px 10px;
-    font-size: 13px;
-  }
-
-  #hint-ribbon {
-    left: 12px;
-    right: 12px;
-    top: 66px;
-    max-width: none;
-    font-size: 12px;
-    padding: 8px 11px;
-  }
-
-  .top-stats-bar {
-    right: 58px;
-    padding: 6px;
-  }
-
-  #stats {
-    gap: 6px;
-  }
-
-  .stat-pill {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-
-  #builder-panel,
-  #inspector-panel {
-    position: fixed;
-    top: auto !important;
-    left: 12px !important;
-    right: auto !important;
-    width: calc(50vw - 18px);
-    min-height: 0;
-    z-index: 14;
-    pointer-events: auto;
-  }
-
-  #inspector-panel {
-    bottom: 8px;
-  }
-
-  #builder-panel {
-    left: calc(50vw + 6px) !important;
-    bottom: 8px;
-  }
-
-  #builder-panel > summary,
-  #inspector-panel > summary {
-    margin-bottom: 0;
-    padding: 8px 10px;
-    border-radius: 14px;
-    font-size: 12px;
-    text-align: center;
-    background: rgba(9, 16, 26, 0.82);
-  }
-
-  #builder-panel .hud-card,
-  #inspector-panel .hud-card {
-    margin-top: 8px;
-    max-height: 42vh;
-    padding: 10px;
-    overflow: auto;
-  }
-
-  #builder-panel:not([open]) .hud-card,
-  #inspector-panel:not([open]) .hud-card {
-    display: none;
-  }
-
-  #builder-preview {
-    max-height: 150px;
-    object-fit: contain;
-  }
-
-  .segment-list {
-    max-height: 68px;
-    overflow: auto;
-  }
-
-  label {
-    margin-bottom: 9px;
-    font-size: 13px;
-  }
-
-  textarea {
-    min-height: 88px;
-  }
-
-  #brand-chip {
-    display: none;
   }
 }
