@@ -1,5 +1,5 @@
-const STORAGE_KEY = "biots-hud-layout-v1";
-const PANEL_IDS = ["stats-panel", "inspector-panel", "builder-panel", "control-drawer"] as const;
+const STORAGE_KEY = "biots-hud-layout-v3";
+const PANEL_IDS = ["lab-panel"] as const;
 
 type PanelId = (typeof PANEL_IDS)[number];
 
@@ -61,7 +61,7 @@ function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number
   const viewportHeight = window.innerHeight;
   const rect = panel.getBoundingClientRect();
   const minTop = getTopSafeOffset();
-  const clampedWidth = clamp(width, 220, Math.max(220, viewportWidth - 12));
+  const clampedWidth = clamp(width, 320, Math.max(320, viewportWidth - 12));
   const clampedHeight = clamp(height ?? rect.height, 180, Math.max(180, viewportHeight - minTop - 8));
   const clampedLeft = clamp(left, 8, Math.max(8, viewportWidth - clampedWidth - 8));
   const clampedTop = clamp(top, minTop, Math.max(minTop, viewportHeight - 56));
