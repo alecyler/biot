@@ -120,6 +120,7 @@ const ribbonHints = [
 ];
 
 function showSplash(): void {
+  refreshHintText();
   splashOverlay.hidden = false;
 }
 
