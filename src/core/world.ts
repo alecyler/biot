@@ -70,8 +70,8 @@ const FROST_RANGE_BASE = 18;
 const FROST_RANGE_PER_SEGMENT = 7;
 const FROST_FREEZE_TICKS = 14;
 const FROST_DAMAGE = 1.1;
-const FIREPROOF_FIRE_REDUCTION = 0.22;
-const INSULATION_COLD_REDUCTION = 0.18;
+const FIREPROOF_FIRE_REDUCTION = 0.28;
+const INSULATION_COLD_REDUCTION = 0.24;
 const WEB_ZONE_LIFE = 180;
 const WEB_ZONE_RADIUS = 26;
 const WEB_PULL_FORCE = 0.03;
@@ -125,9 +125,9 @@ const BRAIN_JOINT_FORCE = 0.085;
 const BRAIN_JOINT_RETURN = 0.12;
 const TIER_TWO_THRESHOLD = 3;
 const TIER_THREE_THRESHOLD = 5;
-const CAMO_STEALTH_PER_SEGMENT = 0.1;
-const GLOW_VISIBILITY_PER_SEGMENT = 0.12;
-const GLOW_LIGHT_BOOST = 0.05;
+const CAMO_STEALTH_PER_SEGMENT = 0.14;
+const GLOW_VISIBILITY_PER_SEGMENT = 0.16;
+const GLOW_LIGHT_BOOST = 0.08;
 
 const CARRION_SPAWN_CHANCE = 0.9;
 const CARRION_DECAY = 0.994;
@@ -763,12 +763,12 @@ export class World {
           venomCount * 0.001 +
           poisonCount * 0.004 +
           antivenomCount * 0.003 +
-          glowCount * 0.004 +
+          glowCount * 0.0025 +
           lightningCount * 0.006 +
           flameCount * 0.007 +
           frostCount * 0.006 +
-          fireproofCount * 0.003 +
-          insulationCount * 0.003 +
+          fireproofCount * 0.0015 +
+          insulationCount * 0.0015 +
           camoCount * 0.002 -
           reproductionBatteryEfficiency -
           structureSupport +
@@ -1242,6 +1242,8 @@ export class World {
       () => this.makeFlowerStarterBiot(),
       () => this.makeGliderGrazerStarterBiot(),
       () => this.makeBulwarkGrazerStarterBiot(),
+      () => this.makeSolarCanopyStarterBiot(),
+      () => this.makeBloomTowerStarterBiot(),
     ];
     const biot = pickOne(factories)();
     biot.energy = this.getEnergyCapacity(biot);
@@ -1263,6 +1265,8 @@ export class World {
       () => this.makeScavengerSkiffStarterBiot(),
       () => this.makePouncerHunterStarterBiot(),
       () => this.makeCarrionRipperStarterBiot(),
+      () => this.makeNovaHunterPrimeStarterBiot(),
+      () => this.makeWebLancerStarterBiot(),
     ];
     const biot = pickOne(factories)();
     biot.energy = this.getEnergyCapacity(biot);
@@ -1565,7 +1569,8 @@ export class World {
         biot.angularVelocity += disaster.spin * 0.05 * normalized;
 
         if (dist < disaster.coreRadius) {
-          biot.energy -= DISASTER_DAMAGE * (1.2 + normalized);
+          const disasterGuard = 1 - Math.min(0.45, biot.segments.filter((segment) => segment.type === "structure").length * 0.03 + biot.segments.filter((segment) => segment.type === "fireproof").length * 0.06 + biot.segments.filter((segment) => segment.type === "insulation").length * 0.05);
+          biot.energy -= DISASTER_DAMAGE * (1.2 + normalized) * disasterGuard;
           if (chance(DISASTER_SEGMENT_STRIP_CHANCE) && biot.segments.length > 3) {
             this.stripRandomSegment(biot);
           }
@@ -1574,7 +1579,8 @@ export class World {
             this.stats.deaths += 1;
           }
         } else if (dist < disaster.radius * 0.7) {
-          biot.energy -= DISASTER_DAMAGE * 0.18 * normalized;
+          const disasterGuard = 1 - Math.min(0.35, biot.segments.filter((segment) => segment.type === "structure").length * 0.02 + biot.segments.filter((segment) => segment.type === "fireproof").length * 0.05 + biot.segments.filter((segment) => segment.type === "insulation").length * 0.04);
+          biot.energy -= DISASTER_DAMAGE * 0.18 * normalized * disasterGuard;
         }
       }
 
@@ -1677,8 +1683,9 @@ export class World {
           adjustedTarget.to.x,
           adjustedTarget.to.y,
         );
+        const visibilityFactor = this.getVisibilityFactorForBiot(biot);
         const allowedDistance =
-          LAUNCHER_HIT_THICKNESS + BODY_THICKNESS_BASE + (targetLine.segment.type === "armor" ? ARMOR_THICKNESS_BONUS : 0);
+          (LAUNCHER_HIT_THICKNESS + BODY_THICKNESS_BASE + (targetLine.segment.type === "armor" ? ARMOR_THICKNESS_BONUS : 0)) * clamp(visibilityFactor, 0.72, 1.18);
 
         if (distance <= allowedDistance && distance < bestDistance) {
           bestDistance = distance;
@@ -3038,7 +3045,11 @@ export class World {
       vx: randomRange(-0.12, 0.12) + (index - 1) * 0.03,
       vy: randomRange(-0.12, 0.12),
       life: randomInt(EGG_HATCH_MIN, EGG_HATCH_MAX),
-      health: EGG_BASE_HEALTH + child.segments.filter((segment) => segment.type === "reproduction").length * 0.5,
+      health:
+        EGG_BASE_HEALTH +
+        child.segments.filter((segment) => segment.type === "reproduction").length * 0.5 +
+        parent.segments.filter((segment) => segment.type === "glow").length * 0.45 +
+        parent.segments.filter((segment) => segment.type === "camo").length * 0.2,
       child,
       kind,
       lineageId: child.lineageId,
@@ -3083,7 +3094,8 @@ export class World {
         const dy = this.getWrappedDelta(egg.y, biot.y, this.config.height);
         const dist = Math.hypot(dx, dy);
         if (dist < 18 && biot.segments.some((segment) => segment.type === "predator" || segment.type === "venom")) {
-          egg.health -= 1.8;
+          const camoGuard = egg.child.segments.filter((segment) => segment.type === "camo").length;
+          egg.health -= Math.max(0.7, 1.8 - camoGuard * 0.18);
         }
       }
       if (egg.life <= 0 && egg.health > 1) {
@@ -3368,7 +3380,7 @@ export class World {
         { parent: 'pred-right', key: 'prop-right-aft', type: 'propulsion', angle: 2.75, length: 10 },
         { parent: 'root', key: 'repro-tail', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.24, angularVelocity: [-0.008, 0.008], maturityAge: [110, 220], lifespanFactor: [2.4, 3.4] },
+      { velocity: 0.24, angularVelocity: [-0.008, 0.008], maturityAge: [110, 220], lifespanFactor: [2.4, 3.4], lineageName: 'Wedge Hunter' },
     );
   }
 
@@ -3382,7 +3394,7 @@ export class World {
         { parent: 'root', key: 'blade-d', type: 'predator', angle: -Math.PI * 0.5, length: 18 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI * 0.25, length: 12 },
       ],
-      { velocity: 0.12, angularVelocity: [-0.05, 0.05], hueJitter: [-4, 4], maturityAge: [100, 200], lifespanFactor: [2.3, 3.2] },
+      { velocity: 0.12, angularVelocity: [-0.05, 0.05], hueJitter: [-4, 4], maturityAge: [100, 200], lifespanFactor: [2.3, 3.2], lineageName: 'Spinner' },
     );
   }
 
@@ -3399,7 +3411,7 @@ export class World {
         { parent: 'launcher-right', key: 'prop-right-tail', type: 'propulsion', angle: 2.7, length: 10 },
         { parent: 'root', key: 'repro-tail', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.22, angularVelocity: [-0.012, 0.012], maturityAge: [120, 240], lifespanFactor: [2.5, 3.6] },
+      { velocity: 0.22, angularVelocity: [-0.012, 0.012], maturityAge: [120, 240], lifespanFactor: [2.5, 3.6], lineageName: 'Launcher Skirmisher' },
     );
   }
 
@@ -3414,7 +3426,7 @@ export class World {
         { parent: 'root', key: 'repro-front', type: 'reproduction', angle: 0, length: 13 },
         { parent: 'root', key: 'repro-back', type: 'reproduction', angle: Math.PI, length: 13 },
       ],
-      { velocity: 0.14, angularVelocity: [-0.01, 0.01], maturityAge: [135, 280], lifespanFactor: [2.8, 4.3] },
+      { velocity: 0.14, angularVelocity: [-0.01, 0.01], maturityAge: [135, 280], lifespanFactor: [2.8, 4.3], lineageName: 'Glider Grazer' },
     );
   }
 
@@ -3430,7 +3442,7 @@ export class World {
         { parent: 'root', key: 'armor-right', type: 'armor', angle: Math.PI * 0.5, length: 13 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 14 },
       ],
-      { velocity: 0.08, angularVelocity: [-0.004, 0.004], maturityAge: [150, 320], lifespanFactor: [3.0, 4.5] },
+      { velocity: 0.08, angularVelocity: [-0.004, 0.004], maturityAge: [150, 320], lifespanFactor: [3.0, 4.5], lineageName: 'Bulwark Grazer' },
     );
   }
 
@@ -3445,7 +3457,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.35, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.26, angularVelocity: [-0.014, 0.014], maturityAge: [110, 210], lifespanFactor: [2.4, 3.4] },
+      { velocity: 0.26, angularVelocity: [-0.014, 0.014], maturityAge: [110, 210], lifespanFactor: [2.4, 3.4], lineageName: 'Lightning Pike' },
     );
   }
 
@@ -3460,7 +3472,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.2, length: 9 },
         { parent: 'fang', key: 'tail', type: 'reproduction', angle: Math.PI, length: 11 },
       ],
-      { velocity: 0.3, angularVelocity: [-0.018, 0.018], maturityAge: [105, 205], lifespanFactor: [2.2, 3.2] },
+      { velocity: 0.3, angularVelocity: [-0.018, 0.018], maturityAge: [105, 205], lifespanFactor: [2.2, 3.2], lineageName: 'Flame Skater' },
     );
   }
 
@@ -3475,7 +3487,7 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.55, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.22, angularVelocity: [-0.014, 0.014], maturityAge: [120, 230], lifespanFactor: [2.5, 3.5] },
+      { velocity: 0.22, angularVelocity: [-0.014, 0.014], maturityAge: [120, 230], lifespanFactor: [2.5, 3.5], lineageName: 'Frost Clamp' },
     );
   }
 
@@ -3491,7 +3503,7 @@ export class World {
         { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI, length: 12 },
         { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 0.55, length: 10 },
       ],
-      { velocity: 0.24, angularVelocity: [-0.01, 0.01], maturityAge: [110, 220], lifespanFactor: [2.6, 3.7] },
+      { velocity: 0.24, angularVelocity: [-0.01, 0.01], maturityAge: [110, 220], lifespanFactor: [2.6, 3.7], lineageName: 'Scavenger Skiff' },
     );
   }
 
@@ -3507,7 +3519,7 @@ export class World {
         { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.7, length: 8 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 11 },
       ],
-      { velocity: 0.34, angularVelocity: [-0.012, 0.012], maturityAge: [95, 180], lifespanFactor: [2.1, 3.0] },
+      { velocity: 0.34, angularVelocity: [-0.012, 0.012], maturityAge: [95, 180], lifespanFactor: [2.1, 3.0], lineageName: 'Pouncer' },
     );
   }
 
@@ -3522,7 +3534,90 @@ export class World {
         { parent: 'root', key: 'prop-right', type: 'propulsion', angle: 2.35, length: 10 },
         { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
       ],
-      { velocity: 0.23, angularVelocity: [-0.011, 0.011], maturityAge: [115, 220], lifespanFactor: [2.5, 3.6] },
+      { velocity: 0.23, angularVelocity: [-0.011, 0.011], maturityAge: [115, 220], lifespanFactor: [2.5, 3.6], lineageName: 'Carrion Ripper' },
+    );
+  }
+
+
+  private makeSolarCanopyStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 15 },
+        { parent: 'root', key: 'photo-a', type: 'photo', angle: -2.15, length: 18 },
+        { parent: 'root', key: 'photo-b', type: 'photo', angle: -1.45, length: 20 },
+        { parent: 'root', key: 'photo-c', type: 'photo', angle: -0.75, length: 22 },
+        { parent: 'root', key: 'photo-d', type: 'photo', angle: 0.75, length: 22 },
+        { parent: 'root', key: 'photo-e', type: 'photo', angle: 1.45, length: 20 },
+        { parent: 'root', key: 'photo-f', type: 'photo', angle: 2.15, length: 18 },
+        { parent: 'root', key: 'glow-core', type: 'glow', angle: 0, length: 12 },
+        { parent: 'root', key: 'armor-left', type: 'armor', angle: -Math.PI * 0.5, length: 12 },
+        { parent: 'root', key: 'armor-right', type: 'armor', angle: Math.PI * 0.5, length: 12 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI, length: 13 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 0.58, length: 11 },
+      ],
+      { velocity: 0.07, angularVelocity: [-0.003, 0.003], maturityAge: [170, 340], lifespanFactor: [3.2, 4.8], lineageName: 'Solar Canopy' },
+    );
+  }
+
+  private makeBloomTowerStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 16 },
+        { parent: 'root', key: 'stem-a', type: 'structure', angle: -1.1, length: 14 },
+        { parent: 'root', key: 'stem-b', type: 'structure', angle: 1.1, length: 14 },
+        { parent: 'stem-a', key: 'photo-a', type: 'photo', angle: -1.9, length: 19 },
+        { parent: 'stem-a', key: 'photo-b', type: 'photo', angle: -0.7, length: 18 },
+        { parent: 'stem-b', key: 'photo-c', type: 'photo', angle: 0.7, length: 18 },
+        { parent: 'stem-b', key: 'photo-d', type: 'photo', angle: 1.9, length: 19 },
+        { parent: 'root', key: 'glide-left', type: 'glide', angle: -2.3, length: 18 },
+        { parent: 'root', key: 'glide-right', type: 'glide', angle: 2.3, length: 18 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: 0, length: 12 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI, length: 14 },
+        { parent: 'root', key: 'camo', type: 'camo', angle: Math.PI * 0.5, length: 10 },
+      ],
+      { velocity: 0.1, angularVelocity: [-0.005, 0.005], maturityAge: [160, 320], lifespanFactor: [3.0, 4.6], lineageName: 'Bloom Tower' },
+    );
+  }
+
+  private makeNovaHunterPrimeStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 14 },
+        { parent: 'root', key: 'pred-left', type: 'predator', angle: -0.45, length: 20 },
+        { parent: 'root', key: 'pred-right', type: 'predator', angle: 0.45, length: 20 },
+        { parent: 'root', key: 'brain', type: 'brain', angle: 0, length: 12 },
+        { parent: 'root', key: 'sense-left', type: 'perception', angle: -0.95, length: 15 },
+        { parent: 'root', key: 'sense-right', type: 'perception', angle: 0.95, length: 15 },
+        { parent: 'root', key: 'prop-left-a', type: 'propulsion', angle: -2.1, length: 9 },
+        { parent: 'root', key: 'prop-right-a', type: 'propulsion', angle: 2.1, length: 9 },
+        { parent: 'root', key: 'prop-left-b', type: 'propulsion', angle: -2.7, length: 10 },
+        { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.7, length: 10 },
+        { parent: 'root', key: 'venom-left', type: 'venom', angle: -0.15, length: 12 },
+        { parent: 'root', key: 'venom-right', type: 'venom', angle: 0.15, length: 12 },
+        { parent: 'root', key: 'repro', type: 'reproduction', angle: Math.PI, length: 12 },
+      ],
+      { velocity: 0.31, angularVelocity: [-0.012, 0.012], maturityAge: [130, 240], lifespanFactor: [2.6, 3.8], lineageName: 'Nova Hunter Prime' },
+    );
+  }
+
+  private makeWebLancerStarterBiot(): Biot {
+    return this.createPresetBiot(
+      [
+        { parent: null, key: 'root', type: 'structure', angle: 0, length: 14 },
+        { parent: 'root', key: 'launcher-left', type: 'launcher', angle: -0.52, length: 18 },
+        { parent: 'root', key: 'launcher-right', type: 'launcher', angle: 0.52, length: 18 },
+        { parent: 'root', key: 'sense', type: 'perception', angle: 0, length: 16 },
+        { parent: 'root', key: 'brain', type: 'brain', angle: -Math.PI * 0.5, length: 11 },
+        { parent: 'root', key: 'glow', type: 'glow', angle: Math.PI * 0.5, length: 10 },
+        { parent: 'root', key: 'prop-left-a', type: 'propulsion', angle: -2.15, length: 10 },
+        { parent: 'root', key: 'prop-right-a', type: 'propulsion', angle: 2.15, length: 10 },
+        { parent: 'root', key: 'prop-left-b', type: 'propulsion', angle: -2.75, length: 10 },
+        { parent: 'root', key: 'prop-right-b', type: 'propulsion', angle: 2.75, length: 10 },
+        { parent: 'root', key: 'camo', type: 'camo', angle: Math.PI, length: 10 },
+        { parent: 'root', key: 'repro-a', type: 'reproduction', angle: Math.PI * 0.75, length: 12 },
+        { parent: 'root', key: 'repro-b', type: 'reproduction', angle: Math.PI * 1.25, length: 12 },
+      ],
+      { velocity: 0.28, angularVelocity: [-0.011, 0.011], maturityAge: [135, 255], lifespanFactor: [2.7, 3.9], lineageName: 'Web Lancer' },
     );
   }
 
@@ -3633,7 +3728,7 @@ export class World {
       lifespan,
       lineageId: id,
       founderId: id,
-      lineageName: id,
+      lineageName: this.makeRandomLineageName(),
     };
   }
 
@@ -3813,6 +3908,56 @@ export class World {
     }
   }
 
+
+  public resizeBounds(previousWidth: number, previousHeight: number, nextWidth: number, nextHeight: number): void {
+    if (
+      !Number.isFinite(previousWidth) ||
+      !Number.isFinite(previousHeight) ||
+      !Number.isFinite(nextWidth) ||
+      !Number.isFinite(nextHeight) ||
+      previousWidth <= 0 ||
+      previousHeight <= 0 ||
+      nextWidth <= 0 ||
+      nextHeight <= 0
+    ) {
+      return;
+    }
+
+    const scaleX = nextWidth / previousWidth;
+    const scaleY = nextHeight / previousHeight;
+    if (Math.abs(scaleX - 1) < 0.001 && Math.abs(scaleY - 1) < 0.001) return;
+
+    for (const biot of this.biots) {
+      biot.x = clamp(biot.x * scaleX, 0, nextWidth);
+      biot.y = clamp(biot.y * scaleY, 0, nextHeight);
+      biot.vx *= Math.min(1.2, Math.max(0.84, scaleX));
+      biot.vy *= Math.min(1.2, Math.max(0.84, scaleY));
+    }
+
+    const scalePoint = <T extends { x: number; y: number }>(item: T): void => {
+      item.x = clamp(item.x * scaleX, 0, nextWidth);
+      item.y = clamp(item.y * scaleY, 0, nextHeight);
+    };
+
+    for (const zone of this.gravityZones) scalePoint(zone);
+    for (const zone of this.fireZones) scalePoint(zone);
+    for (const zone of this.lightZones) scalePoint(zone);
+    for (const projectile of this.projectiles) scalePoint(projectile);
+    for (const disaster of this.disasters) scalePoint(disaster);
+    for (const pellet of this.carrion) scalePoint(pellet);
+    for (const egg of this.eggPods) scalePoint(egg);
+    for (const arc of this.lightningArcs) {
+      arc.fromX = clamp(arc.fromX * scaleX, 0, nextWidth);
+      arc.toX = clamp(arc.toX * scaleX, 0, nextWidth);
+      arc.fromY = clamp(arc.fromY * scaleY, 0, nextHeight);
+      arc.toY = clamp(arc.toY * scaleY, 0, nextHeight);
+    }
+    for (const web of this.webZones) scalePoint(web);
+
+    this.biotSpatialIndex.clear();
+    this.environmentVersion += 1;
+    this.refreshStats();
+  }
 
   public exportSnapshot(): WorldSnapshot {
     return {
