@@ -25,6 +25,8 @@ interface StatsDisplay {
   avgEnergy: number;
   richestEnergy: number;
   oldestAge: number;
+  light?: number;
+  temperature?: number;
   hatchlings?: number;
   juveniles?: number;
   adults?: number;
@@ -124,6 +126,8 @@ export function bindControls(
 
 export function renderStats(target: HTMLElement, stats: StatsDisplay): void {
   const pills = [
+    stats.light !== undefined ? ["Light", `${(stats.light * 100).toFixed(0)}%`] : null,
+    stats.temperature !== undefined ? ["Temp", `${(stats.temperature * 100).toFixed(0)}%`] : null,
     ["Tick", String(stats.tick)],
     ["Population", String(stats.population)],
     ["Births", String(stats.births)],
