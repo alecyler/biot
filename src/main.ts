@@ -84,9 +84,19 @@ const labPaneInspector = labPaneInspectorNode;
 const labPaneBuilder = labPaneBuilderNode;
 
 
+const getViewportWidth = (): number => {
+  const visualWidth = window.visualViewport?.width ?? 0;
+  return Math.max(320, Math.round(Math.max(viewport.clientWidth, window.innerWidth, visualWidth)));
+};
+
+const getViewportHeight = (): number => {
+  const visualHeight = window.visualViewport?.height ?? 0;
+  return Math.max(320, Math.round(Math.max(viewport.clientHeight, window.innerHeight, visualHeight)));
+};
+
 const config: WorldConfig = {
-  width: Math.max(400, viewport.clientWidth),
-  height: Math.max(400, window.innerHeight),
+  width: getViewportWidth(),
+  height: getViewportHeight(),
   lightLevel: 1.6,
   temperatureBias: 1,
   gravityScale: 1,
@@ -173,9 +183,19 @@ function hideSplash(): void {
 }
 
 function resize(): void {
-  config.width = Math.max(400, viewport.clientWidth);
-  config.height = Math.max(400, window.innerHeight);
+  const previousWidth = config.width;
+  const previousHeight = config.height;
+  const nextWidth = getViewportWidth();
+  const nextHeight = getViewportHeight();
+
+  if (previousWidth !== nextWidth || previousHeight !== nextHeight) {
+    world.resizeBounds(previousWidth, previousHeight, nextWidth, nextHeight);
+  }
+
+  config.width = nextWidth;
+  config.height = nextHeight;
   renderer.resize(config.width, config.height);
+  lastRenderedVersion = -1;
 }
 
 function refreshHintText(): void {

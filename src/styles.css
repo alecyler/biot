@@ -1075,3 +1075,117 @@ textarea::placeholder {
     max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 70px);
   }
 }
+
+
+/* Launch-day layout cleanup */
+html,
+body,
+#app,
+#viewport {
+  width: 100%;
+  min-width: 0;
+}
+
+#app,
+#viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+#viewport {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#world {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#lab-panel {
+  width: min(760px, calc(100vw - 32px));
+  height: min(74vh, 760px);
+}
+
+@media (max-width: 900px) {
+  #action-strip {
+    left: 10px;
+    right: 10px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-width: none;
+    justify-content: stretch;
+  }
+
+  #helpBtn {
+    top: calc(env(safe-area-inset-top, 0px) + 108px);
+  }
+
+  #lab-panel {
+    left: 10px !important;
+    right: 10px !important;
+    top: auto !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 124px) !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0;
+    max-height: min(38vh, 360px);
+  }
+
+  #lab-panel > summary {
+    margin-bottom: 6px;
+  }
+
+  #lab-panel[open] .hud-card {
+    max-height: calc(min(38vh, 360px) - 44px);
+    overflow: auto;
+  }
+
+  #lab-panel:not([open]) .hud-card {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  #action-strip {
+    left: 10px;
+    right: 10px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  #helpBtn {
+    top: calc(env(safe-area-inset-top, 0px) + 60px);
+    right: 12px;
+  }
+
+  #hint-ribbon {
+    left: 10px;
+    right: calc(min(42vw, 520px) + 24px);
+    transform: none;
+    width: auto;
+    max-width: none;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    text-align: left;
+  }
+
+  #lab-panel {
+    left: auto !important;
+    right: 10px !important;
+    top: calc(env(safe-area-inset-top, 0px) + 56px) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    width: min(42vw, 520px) !important;
+    height: auto !important;
+    max-height: none;
+  }
+
+  #lab-panel[open] .hud-card {
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 116px);
+  }
+}
