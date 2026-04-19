@@ -17,6 +17,7 @@ const splashStartNode = document.getElementById("splash-start");
 const splashBuilderNode = document.getElementById("splash-builder");
 const splashCloseNode = document.getElementById("splash-close");
 const splashHintNode = document.getElementById("splash-hint");
+const splashReopenBtnNode = document.getElementById("splashReopenBtn");
 const helpBtnNode = document.getElementById("helpBtn");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
@@ -43,6 +44,7 @@ if (
   !(splashBuilderNode instanceof HTMLButtonElement) ||
   !(splashCloseNode instanceof HTMLButtonElement) ||
   !(splashHintNode instanceof HTMLElement) ||
+  !(splashReopenBtnNode instanceof HTMLButtonElement) ||
   !(helpBtnNode instanceof HTMLButtonElement) ||
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
@@ -70,6 +72,7 @@ const splashStartBtn = splashStartNode;
 const splashBuilderBtn = splashBuilderNode;
 const splashCloseBtn = splashCloseNode;
 const splashHint = splashHintNode;
+const splashReopenBtn = splashReopenBtnNode;
 const helpBtn = helpBtnNode;
 const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
@@ -176,6 +179,7 @@ const ribbonHints = [
 ];
 
 function showSplash(): void {
+  refreshHintText();
   splashOverlay.hidden = false;
 }
 
@@ -303,6 +307,12 @@ if (!restoredSnapshot) {
   paused = false;
   hideSplash();
 }
+
+
+splashReopenBtn.addEventListener("click", () => {
+  hideHelpDrawer();
+  showSplash();
+});
 
 helpBtn.addEventListener("click", () => {
   if (helpDrawer.hidden) showHelpDrawer();

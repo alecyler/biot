@@ -424,11 +424,18 @@ textarea {
 }
 
 
-#helpBtn {
+#top-right-tools {
   position: absolute;
   right: 12px;
   top: 12px;
   z-index: 12;
+  display: flex;
+  gap: 8px;
+}
+
+#top-right-tools button,
+#helpBtn,
+#splashReopenBtn {
   width: 40px;
   height: 40px;
   border-radius: 999px;
@@ -1027,7 +1034,7 @@ textarea::placeholder {
     padding: 5px 8px;
   }
 
-  #helpBtn {
+  #top-right-tools {
     top: calc(env(safe-area-inset-top, 0px) + 68px);
     right: 12px;
   }
@@ -1164,6 +1171,7 @@ body,
   }
 
   #helpBtn {
+  #top-right-tools {
     top: calc(env(safe-area-inset-top, 0px) + 108px);
   }
 
@@ -1201,6 +1209,7 @@ body,
   }
 
   #helpBtn {
+  #top-right-tools {
     top: calc(env(safe-area-inset-top, 0px) + 60px);
     right: 12px;
   }
