@@ -1170,6 +1170,7 @@ body,
     justify-content: stretch;
   }
 
+  #helpBtn {
   #top-right-tools {
     top: calc(env(safe-area-inset-top, 0px) + 108px);
   }
@@ -1207,6 +1208,7 @@ body,
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  #helpBtn {
   #top-right-tools {
     top: calc(env(safe-area-inset-top, 0px) + 60px);
     right: 12px;
