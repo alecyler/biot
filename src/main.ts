@@ -30,6 +30,7 @@ const labTabInspectorNode = document.getElementById("lab-tab-inspector");
 const labTabBuilderNode = document.getElementById("lab-tab-builder");
 const labPaneInspectorNode = document.getElementById("lab-pane-inspector");
 const labPaneBuilderNode = document.getElementById("lab-pane-builder");
+const scenePresetButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".scene-preset-btn"));
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
@@ -84,9 +85,19 @@ const labPaneInspector = labPaneInspectorNode;
 const labPaneBuilder = labPaneBuilderNode;
 
 
+const getViewportWidth = (): number => {
+  const visualWidth = window.visualViewport?.width ?? 0;
+  return Math.max(320, Math.round(Math.max(viewport.clientWidth, window.innerWidth, visualWidth)));
+};
+
+const getViewportHeight = (): number => {
+  const visualHeight = window.visualViewport?.height ?? 0;
+  return Math.max(320, Math.round(Math.max(viewport.clientHeight, window.innerHeight, visualHeight)));
+};
+
 const config: WorldConfig = {
-  width: Math.max(400, viewport.clientWidth),
-  height: Math.max(400, window.innerHeight),
+  width: getViewportWidth(),
+  height: getViewportHeight(),
   lightLevel: 1.6,
   temperatureBias: 1,
   gravityScale: 1,
@@ -173,9 +184,19 @@ function hideSplash(): void {
 }
 
 function resize(): void {
-  config.width = Math.max(400, viewport.clientWidth);
-  config.height = Math.max(400, window.innerHeight);
+  const previousWidth = config.width;
+  const previousHeight = config.height;
+  const nextWidth = getViewportWidth();
+  const nextHeight = getViewportHeight();
+
+  if (previousWidth !== nextWidth || previousHeight !== nextHeight) {
+    world.resizeBounds(previousWidth, previousHeight, nextWidth, nextHeight);
+  }
+
+  config.width = nextWidth;
+  config.height = nextHeight;
   renderer.resize(config.width, config.height);
+  lastRenderedVersion = -1;
 }
 
 function refreshHintText(): void {
@@ -237,6 +258,30 @@ function loadSelectedBiotIntoBuilderFromInspector(): void {
   loadBiotIntoBuilder(selected.segments, selected.lineageId || `Captured ${selected.id}`);
 }
 
+function triggerScenePreset(scene: "bloom" | "hunt" | "disaster"): void {
+  switch (scene) {
+    case "bloom":
+      spawnFromSavedPool("flower", 18);
+      hintRibbonText.textContent = "Bloom burst: dropped in a dense wave of flowers. Let it run for 20–30 seconds.";
+      break;
+    case "hunt":
+      spawnFromSavedPool("flower", 10);
+      spawnFromSavedPool("hunter", 3);
+      hintRibbonText.textContent = "Predator panic: seeded flowers and hunters for instant motion.";
+      break;
+    case "disaster": {
+      spawnFromSavedPool("flower", 12);
+      spawnFromSavedPool("hunter", 2);
+      const result = world.triggerChaosEvent();
+      hintRibbonText.textContent = `Disaster reel: ${result.mutations} mutations, ${result.fires} fires, ${result.storms} storms.`;
+      break;
+    }
+  }
+  paused = false;
+  lastRenderedVersion = -1;
+  hideSplash();
+  saveWorldSnapshot();
+}
 
 resize();
 initializeDraggablePanels();
@@ -278,6 +323,15 @@ quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
   saveWorldSnapshot();
 });
+
+for (const button of scenePresetButtons) {
+  button.addEventListener("click", () => {
+    const scene = button.dataset.scene;
+    if (scene === "bloom" || scene === "hunt" || scene === "disaster") {
+      triggerScenePreset(scene);
+    }
+  });
+}
 
 labTabInspector.addEventListener("click", () => {
   labPanel.open = true;
