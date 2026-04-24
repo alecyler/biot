@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "cf:deploy": "wrangler pages deploy dist"
+    "cf:deploy": "wrangler pages deploy dist",
+    "build:check": "tsc && vite build"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
-"vite": "5.4.21"
+    "vite": "5.4.21"
   }
 }
