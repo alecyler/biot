@@ -318,11 +318,6 @@ function refreshHintText(): void {
   splashHint.textContent = splashHints[splashIndex];
 }
 
-function showHelpDrawer(): void {
-  refreshHintText();
-  helpDrawer.hidden = false;
-}
-
 function hideHelpDrawer(): void {
   helpDrawer.hidden = true;
 }
