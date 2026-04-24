@@ -14,9 +14,10 @@ const viewportNode = document.getElementById("viewport");
 const saveSelectedBiotBtnNode = document.getElementById("saveSelectedBiotBtn");
 const splashOverlayNode = document.getElementById("splash-overlay");
 const splashStartNode = document.getElementById("splash-start");
-const splashBuilderNode = document.getElementById("splash-builder");
+const splashTutorialNode = document.getElementById("splash-tutorial");
 const splashCloseNode = document.getElementById("splash-close");
 const splashHintNode = document.getElementById("splash-hint");
+const homeBtnNode = document.getElementById("homeBtn");
 const helpBtnNode = document.getElementById("helpBtn");
 const hintRibbonTextNode = document.getElementById("hint-ribbon-text");
 const quickSpawnFlowerBtnNode = document.getElementById("quickSpawnFlowerBtn");
@@ -24,13 +25,19 @@ const quickSpawnHunterBtnNode = document.getElementById("quickSpawnHunterBtn");
 const chaosEventBtnNode = document.getElementById("chaosEventBtn");
 const helpDrawerNode = document.getElementById("help-drawer");
 const helpDrawerCloseNode = document.getElementById("helpDrawerClose");
+const tutorialOverlayNode = document.getElementById("tutorial-overlay");
+const tutorialTitleNode = document.getElementById("tutorial-title");
+const tutorialBodyNode = document.getElementById("tutorial-body");
+const tutorialStepCountNode = document.getElementById("tutorial-step-count");
+const tutorialBackNode = document.getElementById("tutorial-back");
+const tutorialSkipNode = document.getElementById("tutorial-skip");
+const tutorialNextNode = document.getElementById("tutorial-next");
 const resetWorldBtnNode = document.getElementById("resetWorldBtn");
 const labPanelNode = document.getElementById("lab-panel");
 const labTabInspectorNode = document.getElementById("lab-tab-inspector");
 const labTabBuilderNode = document.getElementById("lab-tab-builder");
 const labPaneInspectorNode = document.getElementById("lab-pane-inspector");
 const labPaneBuilderNode = document.getElementById("lab-pane-builder");
-const scenePresetButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".scene-preset-btn"));
 
 if (
   !(canvasNode instanceof HTMLCanvasElement) ||
@@ -40,9 +47,10 @@ if (
   !(saveSelectedBiotBtnNode instanceof HTMLButtonElement) ||
   !(splashOverlayNode instanceof HTMLElement) ||
   !(splashStartNode instanceof HTMLButtonElement) ||
-  !(splashBuilderNode instanceof HTMLButtonElement) ||
+  !(splashTutorialNode instanceof HTMLButtonElement) ||
   !(splashCloseNode instanceof HTMLButtonElement) ||
   !(splashHintNode instanceof HTMLElement) ||
+  !(homeBtnNode instanceof HTMLButtonElement) ||
   !(helpBtnNode instanceof HTMLButtonElement) ||
   !(hintRibbonTextNode instanceof HTMLElement) ||
   !(quickSpawnFlowerBtnNode instanceof HTMLButtonElement) ||
@@ -50,6 +58,13 @@ if (
   !(chaosEventBtnNode instanceof HTMLButtonElement) ||
   !(helpDrawerNode instanceof HTMLElement) ||
   !(helpDrawerCloseNode instanceof HTMLButtonElement) ||
+  !(tutorialOverlayNode instanceof HTMLElement) ||
+  !(tutorialTitleNode instanceof HTMLElement) ||
+  !(tutorialBodyNode instanceof HTMLElement) ||
+  !(tutorialStepCountNode instanceof HTMLElement) ||
+  !(tutorialBackNode instanceof HTMLButtonElement) ||
+  !(tutorialSkipNode instanceof HTMLButtonElement) ||
+  !(tutorialNextNode instanceof HTMLButtonElement) ||
   !(resetWorldBtnNode instanceof HTMLButtonElement) ||
   !(labPanelNode instanceof HTMLDetailsElement) ||
   !(labTabInspectorNode instanceof HTMLButtonElement) ||
@@ -67,9 +82,10 @@ const viewport = viewportNode;
 const saveSelectedBiotBtn = saveSelectedBiotBtnNode;
 const splashOverlay = splashOverlayNode;
 const splashStartBtn = splashStartNode;
-const splashBuilderBtn = splashBuilderNode;
+const splashTutorialBtn = splashTutorialNode;
 const splashCloseBtn = splashCloseNode;
 const splashHint = splashHintNode;
+const homeBtn = homeBtnNode;
 const helpBtn = helpBtnNode;
 const hintRibbonText = hintRibbonTextNode;
 const quickSpawnFlowerBtn = quickSpawnFlowerBtnNode;
@@ -77,6 +93,13 @@ const quickSpawnHunterBtn = quickSpawnHunterBtnNode;
 const chaosEventBtn = chaosEventBtnNode;
 const helpDrawer = helpDrawerNode;
 const helpDrawerClose = helpDrawerCloseNode;
+const tutorialOverlay = tutorialOverlayNode;
+const tutorialTitle = tutorialTitleNode;
+const tutorialBody = tutorialBodyNode;
+const tutorialStepCount = tutorialStepCountNode;
+const tutorialBackBtn = tutorialBackNode;
+const tutorialSkipBtn = tutorialSkipNode;
+const tutorialNextBtn = tutorialNextNode;
 const resetWorldBtn = resetWorldBtnNode;
 const labPanel = labPanelNode;
 const labTabInspector = labTabInspectorNode;
@@ -85,19 +108,9 @@ const labPaneInspector = labPaneInspectorNode;
 const labPaneBuilder = labPaneBuilderNode;
 
 
-const getViewportWidth = (): number => {
-  const visualWidth = window.visualViewport?.width ?? 0;
-  return Math.max(320, Math.round(Math.max(viewport.clientWidth, window.innerWidth, visualWidth)));
-};
-
-const getViewportHeight = (): number => {
-  const visualHeight = window.visualViewport?.height ?? 0;
-  return Math.max(320, Math.round(Math.max(viewport.clientHeight, window.innerHeight, visualHeight)));
-};
-
 const config: WorldConfig = {
-  width: getViewportWidth(),
-  height: getViewportHeight(),
+  width: Math.max(400, viewport.clientWidth),
+  height: Math.max(400, window.innerHeight),
   lightLevel: 1.6,
   temperatureBias: 1,
   gravityScale: 1,
@@ -175,6 +188,117 @@ const ribbonHints = [
   "Inspect survivors and capture them back into the builder.",
 ];
 
+const TUTORIAL_SEEN_STORAGE_KEY = "biotarium-tutorial-seen-v1";
+
+const tutorialSteps: Array<{
+  title: string;
+  body: string;
+  target?: string;
+  before?: () => void;
+}> = [
+  {
+    title: "What is Biotarium?",
+    body: "This is a tiny living ecosystem. Your job is not to win a level — it is to seed creatures, watch the food web change, and preserve species that survive.",
+    target: "#world",
+  },
+  {
+    title: "Stats bar",
+    body: "On desktop, the top stats show population, lineages, energy, world tick, life stages, and status problems. On mobile we hide it so the tank has room, but the same sim is still running.",
+    target: "#top-stats",
+  },
+  {
+    title: "Fast buttons",
+    body: "Spawn flowers adds food producers. Spawn hunter adds a predator. Chaos Event mutates and disrupts the tank. Reset world clears the saved tank and starts fresh.",
+    target: "#action-strip",
+  },
+  {
+    title: "Inspector",
+    body: "Click any biot in the tank, then use Inspector to read its energy, age, lineage, body parts, status effects, and nearby cousins. Survivors can be saved back into the builder.",
+    target: "#lab-panel",
+    before: () => {
+      labPanel.open = true;
+      setLabTab("inspector", false);
+    },
+  },
+  {
+    title: "Builder",
+    body: "Builder is where you make species. Add branches, pick segment types, adjust angle and length, save favorites, then spawn your design into the tank.",
+    target: "#lab-panel",
+    before: () => {
+      labPanel.open = true;
+      setLabTab("builder", false);
+    },
+  },
+  {
+    title: "Good first experiment",
+    body: "Start with several flowers. Let them stabilize. Then add one hunter. If everything collapses, rebuild the base food web with cheaper plant-heavy biots.",
+    target: "#quickSpawnFlowerBtn",
+  },
+];
+
+let tutorialStepIndex = 0;
+let tutorialHighlightedElement: Element | null = null;
+
+function hasSeenTutorial(): boolean {
+  try {
+    return window.localStorage.getItem(TUTORIAL_SEEN_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function markTutorialSeen(): void {
+  try {
+    window.localStorage.setItem(TUTORIAL_SEEN_STORAGE_KEY, "true");
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function clearTutorialHighlight(): void {
+  if (tutorialHighlightedElement) {
+    tutorialHighlightedElement.classList.remove("tutorial-highlight");
+    tutorialHighlightedElement = null;
+  }
+}
+
+function renderTutorialStep(): void {
+  const step = tutorialSteps[tutorialStepIndex];
+  step.before?.();
+  clearTutorialHighlight();
+
+  tutorialTitle.textContent = step.title;
+  tutorialBody.textContent = step.body;
+  tutorialStepCount.textContent = `Step ${tutorialStepIndex + 1} of ${tutorialSteps.length}`;
+  tutorialBackBtn.disabled = tutorialStepIndex === 0;
+  tutorialNextBtn.textContent = tutorialStepIndex === tutorialSteps.length - 1 ? "Finish" : "Next";
+
+  if (step.target) {
+    const target = document.querySelector(step.target);
+    if (target) {
+      target.classList.add("tutorial-highlight");
+      tutorialHighlightedElement = target;
+    }
+  }
+}
+
+function startTutorial(): void {
+  paused = false;
+  hideSplash();
+  hideHelpDrawer();
+  tutorialStepIndex = 0;
+  tutorialOverlay.hidden = false;
+  document.body.classList.add("tutorial-open");
+  renderTutorialStep();
+}
+
+function endTutorial(): void {
+  tutorialOverlay.hidden = true;
+  document.body.classList.remove("tutorial-open");
+  clearTutorialHighlight();
+  markTutorialSeen();
+}
+
 function showSplash(): void {
   splashOverlay.hidden = false;
 }
@@ -184,19 +308,9 @@ function hideSplash(): void {
 }
 
 function resize(): void {
-  const previousWidth = config.width;
-  const previousHeight = config.height;
-  const nextWidth = getViewportWidth();
-  const nextHeight = getViewportHeight();
-
-  if (previousWidth !== nextWidth || previousHeight !== nextHeight) {
-    world.resizeBounds(previousWidth, previousHeight, nextWidth, nextHeight);
-  }
-
-  config.width = nextWidth;
-  config.height = nextHeight;
+  config.width = Math.max(400, viewport.clientWidth);
+  config.height = Math.max(400, window.innerHeight);
   renderer.resize(config.width, config.height);
-  lastRenderedVersion = -1;
 }
 
 function refreshHintText(): void {
@@ -258,30 +372,6 @@ function loadSelectedBiotIntoBuilderFromInspector(): void {
   loadBiotIntoBuilder(selected.segments, selected.lineageId || `Captured ${selected.id}`);
 }
 
-function triggerScenePreset(scene: "bloom" | "hunt" | "disaster"): void {
-  switch (scene) {
-    case "bloom":
-      spawnFromSavedPool("flower", 18);
-      hintRibbonText.textContent = "Bloom burst: dropped in a dense wave of flowers. Let it run for 20–30 seconds.";
-      break;
-    case "hunt":
-      spawnFromSavedPool("flower", 10);
-      spawnFromSavedPool("hunter", 3);
-      hintRibbonText.textContent = "Predator panic: seeded flowers and hunters for instant motion.";
-      break;
-    case "disaster": {
-      spawnFromSavedPool("flower", 12);
-      spawnFromSavedPool("hunter", 2);
-      const result = world.triggerChaosEvent();
-      hintRibbonText.textContent = `Disaster reel: ${result.mutations} mutations, ${result.fires} fires, ${result.storms} storms.`;
-      break;
-    }
-  }
-  paused = false;
-  lastRenderedVersion = -1;
-  hideSplash();
-  saveWorldSnapshot();
-}
 
 resize();
 initializeDraggablePanels();
@@ -292,6 +382,10 @@ rotateRibbonHint();
 setLabTab("inspector", false);
 initializeAdSenseBanner();
 const restoredSnapshot = loadWorldSnapshot();
+if (!hasSeenTutorial()) {
+  splashTutorialBtn.classList.add("tutorial-unseen");
+}
+
 if (!restoredSnapshot) {
   spawnFromSavedPool("flower");
   spawnFromSavedPool("flower");
@@ -301,12 +395,20 @@ if (!restoredSnapshot) {
   saveWorldSnapshot();
 } else {
   paused = false;
-  hideSplash();
+  if (hasSeenTutorial()) {
+    hideSplash();
+  } else {
+    showSplash();
+  }
 }
 
+homeBtn.addEventListener("click", () => {
+  refreshHintText();
+  showSplash();
+});
+
 helpBtn.addEventListener("click", () => {
-  if (helpDrawer.hidden) showHelpDrawer();
-  else hideHelpDrawer();
+  startTutorial();
 });
 
 helpDrawerClose.addEventListener("click", () => {
@@ -323,15 +425,6 @@ quickSpawnHunterBtn.addEventListener("click", () => {
   spawnFromSavedPool("hunter");
   saveWorldSnapshot();
 });
-
-for (const button of scenePresetButtons) {
-  button.addEventListener("click", () => {
-    const scene = button.dataset.scene;
-    if (scene === "bloom" || scene === "hunt" || scene === "disaster") {
-      triggerScenePreset(scene);
-    }
-  });
-}
 
 labTabInspector.addEventListener("click", () => {
   labPanel.open = true;
@@ -365,16 +458,31 @@ splashStartBtn.addEventListener("click", () => {
   hideSplash();
 });
 
-splashBuilderBtn.addEventListener("click", () => {
-  paused = false;
-  hideSplash();
-  labPanel.open = true;
-  setLabTab("builder");
+splashTutorialBtn.addEventListener("click", () => {
+  startTutorial();
 });
 
 splashCloseBtn.addEventListener("click", () => {
   paused = false;
   hideSplash();
+});
+
+tutorialBackBtn.addEventListener("click", () => {
+  tutorialStepIndex = Math.max(0, tutorialStepIndex - 1);
+  renderTutorialStep();
+});
+
+tutorialSkipBtn.addEventListener("click", () => {
+  endTutorial();
+});
+
+tutorialNextBtn.addEventListener("click", () => {
+  if (tutorialStepIndex >= tutorialSteps.length - 1) {
+    endTutorial();
+    return;
+  }
+  tutorialStepIndex += 1;
+  renderTutorialStep();
 });
 
 saveSelectedBiotBtn.addEventListener("click", () => {
