@@ -1,0 +1,24 @@
+BIOTARIUM DEPLOY NOTES
+
+Upload the CONTENTS of this folder to Cloudflare Pages.
+This folder already includes:
+- index.html
+- assets/
+- about/
+- privacy/
+- contact/
+- ads.txt
+- robots.txt
+- _headers
+
+After deploy, verify:
+https://biotarium.com/
+https://biotarium.com/ads.txt
+
+If using Git-connected Cloudflare Pages with this exact upload as the repo:
+- Build command: leave blank, or use: echo "using checked-in dist"
+- Build output directory: dist
+- Root directory: leave blank
+
+If using Direct Upload:
+- Upload this folder, not the outer project folder.
