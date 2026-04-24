@@ -1017,10 +1017,10 @@ textarea::placeholder {
   }
 
   #lab-panel {
-    left: 10px !important;
-    right: 10px !important;
-    top: auto !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 132px) !important;
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 132px);
     width: auto !important;
     height: min(50vh, 460px) !important;
     max-height: min(50vh, 460px);
@@ -1062,10 +1062,10 @@ textarea::placeholder {
   }
 
   #lab-panel {
-    left: calc(50vw + 6px) !important;
-    right: 10px !important;
-    top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    left: calc(50vw + 6px);
+    right: 10px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     height: auto !important;
     max-height: none;
     min-height: 0;
@@ -1205,10 +1205,10 @@ body.tutorial-open #world.tutorial-highlight {
   }
 
   #lab-panel {
-    left: auto !important;
-    right: 10px !important;
-    top: calc(env(safe-area-inset-top, 0px) + 58px) !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+    left: auto;
+    right: 10px;
+    top: calc(env(safe-area-inset-top, 0px) + 58px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
     width: min(420px, 42vw) !important;
     height: auto !important;
     max-height: none;
@@ -1216,8 +1216,8 @@ body.tutorial-open #world.tutorial-highlight {
   }
 
   #lab-panel:not([open]) {
-    bottom: auto !important;
-    width: 178px !important;
+    bottom: auto;
+    width: 178px;
   }
 
   #lab-panel > summary {
@@ -1236,5 +1236,22 @@ body.tutorial-open #world.tutorial-highlight {
     transform: none;
     width: min(430px, calc(58vw - 20px));
     max-height: calc(100vh - 20px);
+  }
+}
+
+@media (max-width: 900px) {
+  #lab-panel.draggable-panel:not([open]) {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  #lab-panel.draggable-panel > summary {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  #lab-panel.draggable-panel.panel-dragging > summary {
+    cursor: grabbing;
   }
 }

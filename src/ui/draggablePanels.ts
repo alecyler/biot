@@ -1,4 +1,4 @@
-const STORAGE_KEY = "biots-hud-layout-v5";
+const STORAGE_KEY = "biots-hud-layout-v6";
 
 function isMobileLayout(): boolean {
   return window.matchMedia("(max-width: 900px), (max-height: 560px)").matches;
@@ -61,27 +61,51 @@ function getTopSafeOffset(): number {
   return Math.max(8, Math.max(statsBottom, actionBottom) + 8);
 }
 
-function applyMobilePanelPosition(panel: HTMLDetailsElement): void {
-  panel.style.left = "10px";
-  panel.style.right = "10px";
-  panel.style.width = "auto";
-  panel.style.zIndex = "18";
+function getMobileDefaultRect(panel: HTMLDetailsElement): PanelLayout {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const open = panel.open;
+  const safeTop = 10;
+  const width = open ? Math.min(460, viewportWidth - 20) : 178;
+  const height = open ? Math.min(460, Math.max(260, viewportHeight * 0.48)) : Math.max(44, getSummary(panel).getBoundingClientRect().height || 44);
+  const landscape = window.matchMedia("(orientation: landscape)").matches;
+  const left = open
+    ? Math.max(10, viewportWidth - width - 10)
+    : Math.max(10, viewportWidth - width - 10);
+  const top = landscape
+    ? (open ? Math.max(safeTop + 48, 58) : Math.max(safeTop + 48, 58))
+    : Math.max(safeTop, viewportHeight - height - (open ? 86 : 92));
+  return { left, top, width, height, zIndex: Number(panel.style.zIndex || 18) };
+}
 
-  if (window.matchMedia("(orientation: landscape)").matches) {
-    panel.style.top = "calc(env(safe-area-inset-top, 0px) + 72px)";
-    panel.style.bottom = "calc(env(safe-area-inset-bottom, 0px) + 12px)";
-    panel.style.height = "auto";
-    return;
-  }
+function applyMobilePanelPosition(panel: HTMLDetailsElement, left?: number, top?: number, width?: number, height?: number): void {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const open = panel.open;
+  const defaults = getMobileDefaultRect(panel);
+  const minWidth = open ? Math.min(320, viewportWidth - 20) : 150;
+  const maxWidth = open ? Math.min(520, viewportWidth - 20) : Math.min(240, viewportWidth - 20);
+  const minHeight = open ? Math.min(260, viewportHeight - 20) : 42;
+  const maxHeight = open ? Math.min(460, viewportHeight - 20) : 64;
+  const targetWidth = clamp(width ?? defaults.width, minWidth, Math.max(minWidth, maxWidth));
+  const targetHeight = clamp(height ?? defaults.height, minHeight, Math.max(minHeight, maxHeight));
+  const targetLeft = clamp(left ?? defaults.left, 8, Math.max(8, viewportWidth - targetWidth - 8));
+  const targetTop = clamp(top ?? defaults.top, 8, Math.max(8, viewportHeight - Math.min(targetHeight, 64) - 8));
 
-  panel.style.top = "auto";
-  panel.style.bottom = "calc(env(safe-area-inset-bottom, 0px) + 136px)";
-  panel.style.height = "min(50vh, 460px)";
+  panel.style.left = `${targetLeft}px`;
+  panel.style.top = `${targetTop}px`;
+  panel.style.right = "auto";
+  panel.style.bottom = "auto";
+  panel.style.width = `${targetWidth}px`;
+  panel.style.height = open ? `${targetHeight}px` : "auto";
+  panel.style.maxHeight = open ? `${targetHeight}px` : "none";
+  panel.style.minHeight = "0";
+  panel.style.zIndex = panel.style.zIndex || "18";
 }
 
 function applyPanelPosition(panel: HTMLDetailsElement, left: number, top: number, width: number, height?: number): void {
   if (isMobileLayout()) {
-    applyMobilePanelPosition(panel);
+    applyMobilePanelPosition(panel, left, top, width, height);
     return;
   }
 
@@ -130,12 +154,13 @@ export function initializeDraggablePanels(): void {
 
     const rect = panel.getBoundingClientRect();
     const saved = savedLayout[panel.id as PanelId];
-    const defaultWidth = panel.id === "lab-panel" ? Math.max(rect.width, Math.min(1040, window.innerWidth - 32)) : rect.width;
-    const defaultHeight = panel.id === "lab-panel" ? Math.max(rect.height, Math.min(820, window.innerHeight - getTopSafeOffset() - 16)) : rect.height;
+    const mobileDefault = isMobileLayout() ? getMobileDefaultRect(panel) : null;
+    const defaultWidth = mobileDefault?.width ?? (panel.id === "lab-panel" ? Math.max(rect.width, Math.min(1040, window.innerWidth - 32)) : rect.width);
+    const defaultHeight = mobileDefault?.height ?? (panel.id === "lab-panel" ? Math.max(rect.height, Math.min(820, window.innerHeight - getTopSafeOffset() - 16)) : rect.height);
     const width = saved?.width ?? defaultWidth;
     const height = saved?.height ?? defaultHeight;
-    const left = saved?.left ?? Math.max(8, window.innerWidth - width - 16);
-    const top = saved?.top ?? Math.max(getTopSafeOffset(), 64);
+    const left = saved?.left ?? mobileDefault?.left ?? Math.max(8, window.innerWidth - width - 16);
+    const top = saved?.top ?? mobileDefault?.top ?? Math.max(getTopSafeOffset(), 64);
     const zIndex = saved?.zIndex ?? maxZ;
     maxZ = Math.max(maxZ, zIndex + 1);
 
@@ -150,7 +175,6 @@ export function initializeDraggablePanels(): void {
     let moved = false;
 
     summary.addEventListener("pointerdown", (event) => {
-      if (isMobileLayout()) return;
       if (event.button !== 0) return;
       pointerId = event.pointerId;
       originX = event.clientX;
