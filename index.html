@@ -26,21 +26,14 @@
         <p class="splash-kicker">A Last Knight Games experiment</p>
         <h1>Biotarium.com 
         </h1> <p>©2026 Last Knight Games</p>
-        <p class="splash-subtitle">A tiny artificial life sandbox you can watch, influence, and break.</p>
-        <p class="splash-callout"><strong>Every run is different.</strong> Let it breathe for 30 seconds, then stir the tank.</p>
+        <p class="splash-subtitle">Build creatures. Watch them survive (or die). Start simple. Add predators later.</p>
         <p class="splash-mode-note"><strong>Mobile tip:</strong> portrait is great for building and steering. Landscape is calmer when you mostly want to watch the tank.</p>
         <ul class="splash-points">
           <li>Biots evolve, hunt, and die on their own.</li>
           <li>Use the builder to make species and throw them into the food web.</li>
           <li>Start with flowers, then add hunters once the world has food.</li>
-          <li>Need a dramatic demo? Use one of the quick scene buttons below.</li>
         </ul>
         <p id="splash-hint" class="splash-hint"></p>
-        <div class="scene-preset-strip" aria-label="Launch-ready demo scenes">
-          <button type="button" class="secondary-btn inline-btn scene-preset-btn" data-scene="bloom">🌼 Bloom burst</button>
-          <button type="button" class="secondary-btn inline-btn scene-preset-btn" data-scene="hunt">🦷 Predator panic</button>
-          <button type="button" class="scene-preset-btn" data-scene="disaster">🌩️ Disaster reel</button>
-        </div>
         <details class="splash-guide">
           <summary>How to play + what you are seeing</summary>
           <div class="splash-guide-body">
@@ -53,8 +46,8 @@
           </div>
         </details>
         <div class="row splash-actions">
-          <button id="splash-start" type="button">Start simulation</button>
-          <button id="splash-builder" type="button" class="secondary-btn inline-btn">Open builder first</button>
+          <button id="splash-tutorial" type="button" class="tutorial-primary-btn">Take the 60-second tutorial</button>
+          <button id="splash-start" type="button" class="secondary-btn inline-btn">Start simulation</button>
         </div>
       </section>
     </div>
@@ -68,10 +61,8 @@
           </div>
         </div>
 
-        <div id="top-right-tools" aria-label="welcome and help controls">
-          <button id="splashReopenBtn" type="button" aria-label="Open welcome screen">⌂</button>
-          <button id="helpBtn" type="button" aria-label="Open welcome help">?</button>
-        </div>
+        <button id="homeBtn" type="button" aria-label="Open welcome screen">⌂</button>
+        <button id="helpBtn" type="button" aria-label="Start tutorial">?</button>
 
         <div id="top-stats" class="top-stats-bar" aria-live="polite">
           <div id="stats"></div>
@@ -122,19 +113,6 @@
                 <li>Smart hunter: predator + propulsion + perception + brain.</li>
                 <li>Late-game weapons like launcher, flame, frost, and lightning work best after a food web exists.</li>
                 <li>Glow boosts light harvesting in dim spots, but it also increases visibility. Camo does the opposite.</li>
-              </ul>
-            </details>
-            <details class="help-drawer-section">
-              <summary>Launch-ready demo scenes</summary>
-              <div class="scene-preset-strip">
-                <button type="button" class="secondary-btn inline-btn scene-preset-btn" data-scene="bloom">🌼 Bloom burst</button>
-                <button type="button" class="secondary-btn inline-btn scene-preset-btn" data-scene="hunt">🦷 Predator panic</button>
-                <button type="button" class="scene-preset-btn" data-scene="disaster">🌩️ Disaster reel</button>
-              </div>
-              <ul class="help-legend-list">
-                <li><strong>Bloom burst:</strong> fast peaceful opener with a tank full of producers.</li>
-                <li><strong>Predator panic:</strong> enough food and hunters to get motion on screen quickly.</li>
-                <li><strong>Disaster reel:</strong> a food web plus a chaos spike for the best “what is happening” clip.</li>
               </ul>
             </details>
             <details class="help-drawer-section">
@@ -279,6 +257,21 @@
           </div>
         </details>
       </main>
+    </div>
+
+
+    <div id="tutorial-overlay" hidden aria-live="polite">
+      <div class="tutorial-backdrop"></div>
+      <section class="tutorial-card" role="dialog" aria-modal="true" aria-label="Biotarium tutorial">
+        <div class="tutorial-progress"><span id="tutorial-step-count"></span></div>
+        <h2 id="tutorial-title"></h2>
+        <p id="tutorial-body"></p>
+        <div class="tutorial-actions">
+          <button id="tutorial-back" type="button" class="secondary-btn inline-btn">Back</button>
+          <button id="tutorial-skip" type="button" class="secondary-btn inline-btn">Skip</button>
+          <button id="tutorial-next" type="button">Next</button>
+        </div>
+      </section>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

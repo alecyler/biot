@@ -3909,56 +3909,6 @@ export class World {
   }
 
 
-  public resizeBounds(previousWidth: number, previousHeight: number, nextWidth: number, nextHeight: number): void {
-    if (
-      !Number.isFinite(previousWidth) ||
-      !Number.isFinite(previousHeight) ||
-      !Number.isFinite(nextWidth) ||
-      !Number.isFinite(nextHeight) ||
-      previousWidth <= 0 ||
-      previousHeight <= 0 ||
-      nextWidth <= 0 ||
-      nextHeight <= 0
-    ) {
-      return;
-    }
-
-    const scaleX = nextWidth / previousWidth;
-    const scaleY = nextHeight / previousHeight;
-    if (Math.abs(scaleX - 1) < 0.001 && Math.abs(scaleY - 1) < 0.001) return;
-
-    for (const biot of this.biots) {
-      biot.x = clamp(biot.x * scaleX, 0, nextWidth);
-      biot.y = clamp(biot.y * scaleY, 0, nextHeight);
-      biot.vx *= Math.min(1.2, Math.max(0.84, scaleX));
-      biot.vy *= Math.min(1.2, Math.max(0.84, scaleY));
-    }
-
-    const scalePoint = <T extends { x: number; y: number }>(item: T): void => {
-      item.x = clamp(item.x * scaleX, 0, nextWidth);
-      item.y = clamp(item.y * scaleY, 0, nextHeight);
-    };
-
-    for (const zone of this.gravityZones) scalePoint(zone);
-    for (const zone of this.fireZones) scalePoint(zone);
-    for (const zone of this.lightZones) scalePoint(zone);
-    for (const projectile of this.projectiles) scalePoint(projectile);
-    for (const disaster of this.disasters) scalePoint(disaster);
-    for (const pellet of this.carrion) scalePoint(pellet);
-    for (const egg of this.eggPods) scalePoint(egg);
-    for (const arc of this.lightningArcs) {
-      arc.fromX = clamp(arc.fromX * scaleX, 0, nextWidth);
-      arc.toX = clamp(arc.toX * scaleX, 0, nextWidth);
-      arc.fromY = clamp(arc.fromY * scaleY, 0, nextHeight);
-      arc.toY = clamp(arc.toY * scaleY, 0, nextHeight);
-    }
-    for (const web of this.webZones) scalePoint(web);
-
-    this.biotSpatialIndex.clear();
-    this.environmentVersion += 1;
-    this.refreshStats();
-  }
-
   public exportSnapshot(): WorldSnapshot {
     return {
       version: 1,
