@@ -300,7 +300,6 @@ function endTutorial(): void {
 }
 
 function showSplash(): void {
-  refreshHintText();
   splashOverlay.hidden = false;
 }
 
